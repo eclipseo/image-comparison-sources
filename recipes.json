@@ -1,0 +1,103 @@
+{
+    "recipes": {
+        "aom": {
+            "quality_start": 4,
+            "quality_end": 63,
+            "quality_step": 1,
+            "encode_extension": "webm",
+            "decode_extension": "y4m",
+            "encode_cmd": "aomenc --tile-columns=4 --cpu-used=2 --full-still-picture-hdr --passes=2 --end-usage=q --cq-level=$quality -o $target $origpng_y4m",
+            "lossless_cmd": "aomenc --tile-columns=4 --cpu-used=2 --full-still-picture-hdr --passes=2 --lossless=1 -o $target $origpng_y4m",
+            "decode_cmd": "aomdec $target -o $target_dec",
+            "export_to_png": true
+        },     
+        "aom-vmaf": {
+            "quality_start": 4,
+            "quality_end": 63,
+            "quality_step": 1,
+            "encode_extension": "webm",
+            "decode_extension": "y4m",
+            "encode_cmd": "aomenc --tile-columns=4 --cpu-used=2 --full-still-picture-hdr --passes=2 --end-usage=q --cq-level=$quality --tune=vmaf_with_preprocessing --vmaf-model-path=vmaf_v0.6.1.pkl -o $target $origpng_y4m",
+            "lossless_cmd": "aomenc --tile-columns=4 --cpu-used=2 --full-still-picture-hdr --passes=2 --lossless=1  --tune=vmaf_with_preprocessing --vmaf-model-path=/usr/share/model/vmaf_v0.6.1.pkl -o $target $origpng_y4m",
+            "decode_cmd": "aomdec $target -o $target_dec",
+            "export_to_png": true
+        },         
+        "aom-avif": {
+            "quality_start": 4,
+            "quality_end": 63,
+            "quality_step": 1,
+            "encode_extension": "avif",
+            "decode_extension": "y4m",
+            "encode_cmd": "avifenc --tilecolslog2 4 -c aom -s 4 --min $quality --max $quality -o $target $origpng_y4m",
+            "lossless_cmd": "avifenc --lossless --tilecolslog2 4 -c aom -s 4 -o $target $origpng_y4m",
+            "decode_cmd": "avifdec -c dav1d $target $target_dec",
+            "export_to_png": true
+        }, 
+        "bpg": {
+            "quality_start": 1,
+            "quality_end": 51,
+            "quality_step": 1,
+            "encode_extension": "bpg",
+            "decode_extension": "png",
+            "encode_cmd": "bpgenc -m 8 -f 420 -q $quality -o $target $origpng",
+            "lossless_cmd": "bpgenc -m 8 -f 420 -lossless -o $target $origpng",
+            "decode_cmd": "bpgdec -o $target_dec $target",
+            "export_to_png": true
+        },        
+        "jxl": {
+            "quality_start": 0,
+            "quality_end": 100,
+            "quality_step": 2,
+            "encode_extension": "jxl",
+            "decode_extension": "png",
+            "encode_cmd": "cjpegxl $origpng $target -v -p -q $quality",
+            "lossless_cmd": "cjpegxl $origpng $target -v -p -q 100",
+            "decode_cmd": "djpegxl $target $target_dec",
+            "export_to_png": true
+        },
+        "mozjpeg": {
+            "quality_start": 5,
+            "quality_end": 95,
+            "quality_step": 1,
+            "encode_extension": "jpg",
+            "decode_extension": "ppm",
+            "encode_cmd": "cjpeg -quality $quality -outfile $target $origpng_ppm",
+            "lossless_cmd": "cjpeg -rgb -quality 100 -outfile $target $origpng_ppm",
+            "decode_cmd": "djpeg -outfile $target_dec $target",
+            "export_to_png": true
+        },
+        "rav1e": {
+            "quality_start": 1,
+            "quality_end": 201,
+            "quality_step": 5,
+            "encode_extension": "ivf",
+            "decode_extension": "png",
+            "encode_cmd": "rav1e --verbose --tile-cols=4 --range full --quantizer $quality $origpng_y4m -o $target",
+            "lossless_cmd": "rav1e --verbose --tile-cols=4 --range full --quantizer 1 $origpng_y4m -o $target",
+            "decode_cmd": "aomdec $target -o $target_dec",
+            "export_to_png": true
+        },
+        "svt-av1": {
+            "quality_start": 4,
+            "quality_end": 63,
+            "quality_step": 1,
+            "encode_extension": "ivf",
+            "decode_extension": "y4m",
+            "encode_cmd": "SvtAv1EncApp --preset 2 --tile-columns 4 --rc 0 --qp --min-q $quality --max-qp $quality -i $origpng_y4m -b $target",
+            "lossless_cmd": "SvtAv1EncApp --preset 2 --tile-columns 4 --rc 0 --qp --min-qp 0 --max-qp 0 -i $origpng_y4m -b $target",
+            "decode_cmd": "SvtAv1DecApp -i $target -o $target_dec",
+            "export_to_png": true
+        },
+        "webp": {
+            "quality_start": 0,
+            "quality_end": 95,
+            "quality_step": 1,
+            "encode_extension": "webp",
+            "decode_extension": "png",
+            "encode_cmd": "cwebp -mt -q $quality -o $target $origpng",
+            "lossless_cmd": "cwebp -mt -z 9 -lossless -o $target $origpng",
+            "decode_cmd": "dwebp -o $target_dec $target",
+            "export_to_png": true
+        }
+    }
+}
