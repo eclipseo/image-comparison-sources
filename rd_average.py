@@ -109,13 +109,13 @@ def get_lossy_average(args):
     columns = [
         "file_name", "quality", "orig_file_size", "compressed_file_size",
         "pixels", "bpp", "compression_ratio", "encode_time", "decode_time",
-        "y_ssim_score", "rgb_ssim_score", "msssim_score", "psnrhvsm_score",
+        "ssim_score", "msssim_score", "ciede2000_score", "psnrhvs_score",
         "vmaf_score"
     ]
     final_columns = [
         "quality", "avg_bpp", "avg_compression_ratio", "avg_space_saving",
-        "wavg_encode_time", "wavg_decode_time", "wavg_y_ssim_score",
-        "wavg_rgb_ssim_score", "wavg_msssim_score", "wavg_psnrhvsm_score",
+        "wavg_encode_time", "wavg_decode_time", "wavg_ssim_score",
+         "wavg_msssim_score", "wavg_ciede2000_score","wavg_psnrhvs_score",
         "wavg_vmaf_score"
     ]
     final_data = pd.DataFrame(columns=final_columns)
@@ -147,21 +147,21 @@ def get_lossy_average(args):
             merged_data[i]["encode_time"], weights=merged_data[i]["pixels"])
         wavg_decode_time = np.average(
             merged_data[i]["decode_time"], weights=merged_data[i]["pixels"])
-        wavg_y_ssim_score = np.average(
-            merged_data[i]["y_ssim_score"], weights=merged_data[i]["pixels"])
-        wavg_rgb_ssim_score = np.average(
-            merged_data[i]["rgb_ssim_score"], weights=merged_data[i]["pixels"])
+        wavg_ssim_score = np.average(
+            merged_data[i]["ssim_score"], weights=merged_data[i]["pixels"])
+        wavg_ciede2000_score = np.average(
+            merged_data[i]["ciede2000_score"], weights=merged_data[i]["pixels"])
         wavg_msssim_score = np.average(
             merged_data[i]["msssim_score"], weights=merged_data[i]["pixels"])
-        wavg_psnrhvsm_score = np.average(
-            merged_data[i]["psnrhvsm_score"], weights=merged_data[i]["pixels"])
+        wavg_psnrhvs_score = np.average(
+            merged_data[i]["psnrhvs_score"], weights=merged_data[i]["pixels"])
         wavg_vmaf_score = np.average(
             merged_data[i]["vmaf_score"], weights=merged_data[i]["pixels"])
 
         final_data.loc[i] = [
             quality, avg_bpp, avg_compression_ratio, avg_space_saving,
-            wavg_encode_time, wavg_decode_time, wavg_y_ssim_score,
-            wavg_rgb_ssim_score, wavg_msssim_score, wavg_psnrhvsm_score,
+            wavg_encode_time, wavg_decode_time, wavg_ssim_score,
+             wavg_msssim_score, wavg_ciede2000_score, wavg_psnrhvs_score,
             wavg_vmaf_score
         ]
     results_file = path + "/" + os.path.basename(

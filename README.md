@@ -9,13 +9,13 @@ to make a comparison of several codecs.
 recipes.json is a JSON formatted files containing the settings for the codec
 formats to test. You can add new ones easily if you respect the structure:
 
- - quality_start: the quality at which to start encoding
+ - quality_start: the quality at which to stop decoding
  - quality_end: the quality at which to stop encoding
  - quality_step: the interval of quality between two settings
  - encode_extension: the extension for encoded images
  - decode_extension: the extension for decoded images
  - encode_cmd: the command for encoding at a given quality
- - lossless_cmd: the command for encoding at a lossless quality
+ - lossless_cmd: the command for encoding at a lossles quality
  - decode_cmd: the command for decoding the encoded image
  - export_to_png: set to true if you want the images selected with rd_select.py
  to be exported in PNG. It is useful is the encoded format is not recognized by
@@ -36,7 +36,7 @@ for a given format. It takes 3 arguments:
 
  - Arg 1: the codec format to test.
  - Arg 2: the name of the subset to test (e.g. 'subset1').
- - Arg 3: the path to the subset (in PNG) to test (e.g. 'subset1/').
+ - Arg 3: the path to the subset to test (e.g. 'subset1/').
 
 ## rd_select.py
 
@@ -81,7 +81,6 @@ with rd_average.py. It takes 2 arguments:
  - matplotlib
  - six
  - pytablewriter
- - and aom av1, rav1e, jpeg-xl, webp, mozjpeg
 
 ## Licensing
 

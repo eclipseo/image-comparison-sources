@@ -49,11 +49,7 @@ import numpy as np
 convert = "ffmpeg"
 
 # Tests
-rgbssim = "dump_ssim"
-yssim = "dump_ssim -y"
-psnrhvsm = "dump_psnrhvs -y"
-msssim = "dump_msssim -y"
-vmaf = "vmafossexec yuv420p"
+vmaf = "vmaf --json --model version=vmaf_v0.6.1 --feature psnr --feature psnr_hvs --feature float_ssim --feature float_ms_ssim --feature ciede --json"
 
 # Path to tmp dir to be used by the tests
 tmpdir = "/tmp/"
@@ -131,78 +127,12 @@ def get_img_height(path):
 
 
 def convert_img(inn, out):
-    cmd = "%s -y -i %s -pix_fmt yuv420p %s" % (convert, inn, out)
+    #10le -strict -1
+    cmd = "%s -y -i %s -pix_fmt yuv420p10le -strict -1 %s" % (convert, inn, out)
     run_silent(cmd)
 
-
-def score_y_ssim(y4m1, y4m2):
-    cmd = "%s %s %s" % (yssim, y4m1, y4m2)
-    proc = subprocess.Popen(
-        split(cmd),
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
-        encoding="utf-8")
-    out, err = proc.communicate()
-    if proc.returncode != 0:
-        sys.stderr.write("Failed process: %s\n" % (yssim))
-        sys.exit(proc.returncode)
-    lines = out.split(os.linesep)
-    qscore = float(re.search('(?<=Total: )\d+\.?\d*', lines[-2]).group(0))
-    return qscore
-
-
-def score_psnrhvsm(y4m1, y4m2):
-    cmd = "%s %s %s" % (psnrhvsm, y4m1, y4m2)
-    proc = subprocess.Popen(
-        split(cmd),
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
-        encoding="utf-8")
-    out, err = proc.communicate()
-    if proc.returncode != 0:
-        sys.stderr.write("Failed process: %s\n" % (psnrhvsm))
-        sys.exit(proc.returncode)
-    lines = out.split(os.linesep)
-    qscore = float(re.search('(?<=Total: )\d+\.?\d*', lines[-2]).group(0))
-    return qscore
-
-
-def score_rgb_ssim(y4m1, y4m2):
-    cmd = "%s %s %s" % (rgbssim, y4m1, y4m2)
-    proc = subprocess.Popen(
-        split(cmd),
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
-        encoding="utf-8")
-    out, err = proc.communicate()
-    if proc.returncode != 0:
-        sys.stderr.write("Failed process: %s\n" % (rgbssim))
-        sys.exit(proc.returncode)
-    lines = out.split(os.linesep)
-    qscore = float(re.search('(?<=Total: )\d+\.?\d*', lines[-2]).group(0))
-    return qscore
-
-
-def score_msssim(y4m1, y4m2):
-    cmd = "%s %s %s" % (msssim, y4m1, y4m2)
-    proc = subprocess.Popen(
-        split(cmd),
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
-        encoding="utf-8")
-    out, err = proc.communicate()
-    if proc.returncode != 0:
-        sys.stderr.write("Failed process: %s\n" % (msssim))
-        sys.exit(proc.returncode)
-    lines = out.split(os.linesep)
-    qscore = float(re.search('(?<=Total: )\d+\.?\d*', lines[-2]).group(0))
-    return qscore
-
-
-def score_vmaf(width, height, yuv1, yuv2):
-    cmd = "%s %s %s %s %s %s --log /dev/stdout --log-fmt json" % (vmaf, width, 
-                                                                  height, yuv1, 
-                                                                  yuv2,                                "vmaf_v0.6.1.pkl")
+def get_score(y4m1, y4m2, target_json):
+    cmd = "%s  -r %s -d %s -o %s" % (vmaf, y4m1, y4m2, target_json)
     proc = subprocess.Popen(
         split(cmd),
         stdout=subprocess.PIPE,
@@ -212,10 +142,23 @@ def score_vmaf(width, height, yuv1, yuv2):
     if proc.returncode != 0:
         sys.stderr.write("Failed process: %s\n" % (vmaf))
         sys.exit(proc.returncode)
-    lines = out.split(os.linesep)
-    qscore = float(
-        re.search('(?<="VMAF score":)\d+\.?\d*', lines[-4]).group(0))
-    return qscore
+        
+    with open(target_json) as f:
+        data = f.read()
+        scores = json.loads(data)
+        for i in scores["pooled_metrics"]:
+            if (i["metric"] == "psnr_hvs"):
+                psnrhvs_score = i["pooling_methods"]["mean"]
+            elif (i["metric"] == "float_ssim"):
+                ssim_score = i["pooling_methods"]["mean"]
+            elif (i["metric"] == "float_ms_ssim"):
+                msssim_score = i["pooling_methods"]["mean"]
+            elif (i["metric"] == "ciede2000"):
+                ciede2000_score = i["pooling_methods"]["mean"]
+            elif (i["metric"] == "vmaf"):
+                vmaf_score = i["pooling_methods"]["mean"]
+        
+    return ssim_score, msssim_score, ciede2000_score, psnrhvs_score, vmaf_score
 
 
 # Returns tuple containing:
@@ -262,8 +205,6 @@ def get_lossy_results(subset_name, origpng, width, height, format,
                       format_recipe, quality):
     origpng_y4m = path_for_file_in_tmp(origpng) + ".y4m"
     convert_img(origpng, origpng_y4m)
-    origpng_yuv = path_for_file_in_tmp(origpng) + ".yuv"
-    convert_img(origpng, origpng_yuv)
     origpng_ppm = path_for_file_in_tmp(origpng) + ".ppm"
     convert_img(origpng, origpng_ppm)
 
@@ -278,6 +219,8 @@ def get_lossy_results(subset_name, origpng, width, height, format,
     wrapped = wrapper(run_silent, cmd)
     encode_time = Timer(wrapped).timeit(1)
 
+    target_json = target_dec + ".json"
+    
     target_dec += "." + format_recipe['decode_extension']
     cmd = string.Template(format_recipe['decode_cmd']).substitute(locals())
     wrapped = wrapper(run_silent, cmd)
@@ -288,33 +231,22 @@ def get_lossy_results(subset_name, origpng, width, height, format,
     else:
         target_y4m = path_for_file_in_tmp(target_dec) + ".y4m"
         convert_img(target_dec, target_y4m)
-
-    if format_recipe['decode_extension'] == 'yuv':
-        target_yuv = target_dec
-    else:
-        target_yuv = path_for_file_in_tmp(target_dec) + ".yuv"
-        convert_img(target_dec, target_yuv)
-
-    yssim_score = score_y_ssim(origpng_y4m, target_y4m)
-    rgb_ssim_score = score_rgb_ssim(origpng_y4m, target_y4m)
-    psnrhvsm_score = score_psnrhvsm(origpng_y4m, target_y4m)
-    msssim_score = score_msssim(origpng_y4m, target_y4m)
-    vmaf_score = score_vmaf(width, height, origpng_yuv, target_yuv)
+        
+    ssim_score, msssim_score, ciede2000_score, psnrhvs_score, vmaf_score = get_score(origpng_y4m, target_y4m, target_json)
 
     target_file_size = os.path.getsize(target)
 
     try:
-        os.remove(origpng_yuv)
         os.remove(origpng_y4m)
         os.remove(origpng_ppm)
         os.remove(target_dec)
-        os.remove(target_yuv)
+        os.remove(target_json)
         os.remove(target_y4m)
     except FileNotFoundError:
         pass
 
-    return (target_file_size, encode_time, decode_time, yssim_score,
-            rgb_ssim_score, msssim_score, psnrhvsm_score, vmaf_score)
+    return (target_file_size, encode_time, decode_time, ssim_score,
+            msssim_score, ciede2000_score, psnrhvs_score, vmaf_score)
 
 
 def process_image(args):
@@ -384,7 +316,7 @@ def process_image(args):
     file = open(path, "w")
 
     file.write(
-        "file_name:quality:orig_file_size:compressed_file_size:pixels:bpp:compression_ratio:encode_time:decode_time:y_ssim_score:rgb_ssim_score:msssim_score:psnrhvsm_score:vmaf_score\n"
+        "file_name:quality:orig_file_size:compressed_file_size:pixels:bpp:compression_ratio:encode_time:decode_time:ssim_score:msssim_score:ciede2000_score:psnrhvs_score:vmaf_score\n"
     )
     if isfloat:
         quality_list = list(np.arange(start, end, step))
@@ -439,7 +371,7 @@ def main(argv):
             supported_formats))
         return
 
-    pool = Pool(processes=4)
+    pool = Pool(processes=16)
     pool.map(process_image, [(format, data['recipes'][format], subset_name,
                                 origpng)
                                for origpng in glob.glob(argv[3] + "/*.png")])

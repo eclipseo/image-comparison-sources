@@ -46,52 +46,50 @@ def generate_plots(path, requested_formats):
         file = path + "/" + subset_name + "." + format + ".lossy.out"
         data[format] = pd.read_csv(file, sep=":")
 
-    plt.rcParams['svg.fonttype'] = 'path'
-
-    # Y-SSIM
+    # SSIM
     fig = plt.figure()
     plt.figure(figsize=(25, 15))
     plt.title(
-        "Quality according to Y-SSIM in function of number of bits per pixel")
+        "Quality according to SSIM in function of number of bits per pixel")
     plt.suptitle(subset_name)
     plt.xlabel("Bits per pixels")
-    plt.ylabel("dB (Y-SSIM)")
+    plt.ylabel("Float SSIM")
     plt.xscale("log")
     plt.xlim([0.1, 2])
-    plt.ylim([10, 20])
+    plt.ylim([0.98, 1])
     plt.minorticks_on()
     plt.grid(b=True, which='both', color='0.65', linestyle='--')
     for format in data:
         plt.plot(
             data[format]["avg_bpp"],
-            data[format]["wavg_y_ssim_score"],
+            data[format]["wavg_ssim_score"],
             label=format)
     plt.legend()
-    plt.savefig(path + "/" + subset_name + ".y-ssim.(" +
+    plt.savefig(path + "/" + subset_name + ".ssim.(" +
                 ','.join(requested_formats) + ").svg")
     plt.close(fig)
 
-    # RGB-SSIM
+    # CIEDE2000
     fig = plt.figure()
     plt.figure(figsize=(25, 15))
     plt.title(
-        "Quality according to RGB-SSIM in function of number of bits per pixel"
+        "Quality according to CIEDE2000 in function of number of bits per pixel"
     )
     plt.suptitle(subset_name)
     plt.xlabel("Bits per pixels")
-    plt.ylabel("dB (RGB-SSIM)")
+    plt.ylabel("dB (CIEDE2000)")
     plt.xscale("log")
     plt.xlim([0.1, 2])
-    plt.ylim([10, 20])
+    plt.ylim([30, 50])
     plt.minorticks_on()
     plt.grid(b=True, which='both', color='0.65', linestyle='--')
     for format in data:
         plt.plot(
             data[format]["avg_bpp"],
-            data[format]["wavg_rgb_ssim_score"],
+            data[format]["wavg_ciede2000_score"],
             label=format)
     plt.legend()
-    plt.savefig(path + "/" + subset_name + ".rgb-ssim.(" +
+    plt.savefig(path + "/" + subset_name + ".ciede2000.(" +
                 ','.join(requested_formats) + ").svg")
     plt.close(fig)
 
@@ -102,10 +100,10 @@ def generate_plots(path, requested_formats):
         "Quality according to MS-SSIM in function of number of bits per pixel")
     plt.suptitle(subset_name)
     plt.xlabel("Bits per pixels")
-    plt.ylabel("dB (MS-SSIM)")
+    plt.ylabel("Float MS-SSIM")
     plt.xscale("log")
     plt.xlim([0.1, 2])
-    plt.ylim([15, 35])
+    plt.ylim([0.98, 1])
     plt.minorticks_on()
     plt.grid(b=True, which='both', color='0.65', linestyle='--')
     for format in data:
@@ -121,11 +119,11 @@ def generate_plots(path, requested_formats):
     fig = plt.figure()
     plt.figure(figsize=(25, 15))
     plt.title(
-        "Quality according to PSNR-HVS-M in function of number of bits per pixel"
+        "Quality according to PSNR-HVS in function of number of bits per pixel"
     )
     plt.suptitle(subset_name)
     plt.xlabel("Bits per pixels")
-    plt.ylabel("dB (PSNR-HVS-M)")
+    plt.ylabel("dB (PSNR-HVS)")
     plt.xscale("log")
     plt.xlim([0.1, 2])
     plt.ylim([25, 50])
@@ -134,10 +132,10 @@ def generate_plots(path, requested_formats):
     for format in data:
         plt.plot(
             data[format]["avg_bpp"],
-            data[format]["wavg_psnrhvsm_score"],
+            data[format]["wavg_psnrhvs_score"],
             label=format)
     plt.legend()
-    plt.savefig(path + "/" + subset_name + ".psnr-hvs-m.(" +
+    plt.savefig(path + "/" + subset_name + ".psnr-hvs.(" +
                 ','.join(requested_formats) + ").svg")
     plt.close(fig)
 
