@@ -1,5 +1,5 @@
 #!/usr/bin/python3
-# Copyright 2017-2018 Wyoh Knott
+# Copyright 2017-2020 Robert-André Mauchin
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
@@ -82,7 +82,7 @@ def path_for_file_in_tmp(path):
 
 
 def convert_img(inn, out):
-    cmd = "%s -y -i %s -pix_fmt yuv420p %s" % (convert, inn, out)
+    cmd = "%s -y -i %s %s" % (convert, inn, out)
     run_silent(cmd)
 
 
@@ -241,7 +241,11 @@ def process_image(args):
             cmd = string.Template(format_recipe['decode_cmd']).substitute(
                 locals())
             run_silent(cmd)
-            convert_img(target_dec, os.path.splitext(target)[0] + ".png")
+            if format_recipe['decode_extension'] == 'png':
+                copy(target_dec, os.path.splitext(target)[0] + ".png")
+            else:
+                convert_img(target_dec, os.path.splitext(target)[0] + ".png")
+            
             try:
                 os.remove(target_dec)
             except FileNotFoundError:

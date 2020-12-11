@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 # Copyright 2013, Mozilla Corporation
-# Copyright 2017-2018 Wyoh Knott
+# Copyright 2017-2020 Robert-André Mauchin
 # Loosely based on a script written by Josh Aas
 # https://github.com/bdaehlie/web_image_formats
 #
@@ -43,10 +43,6 @@ import json
 from multiprocessing import Pool
 from timeit import Timer
 import numpy as np
-
-# Paths to various programs and config files used by the tests #
-# Conversion
-convert = "ffmpeg"
 
 # Tests
 vmaf = "vmaf --json --model version=vmaf_v0.6.1 --feature psnr --feature psnr_hvs --feature float_ssim --feature float_ms_ssim --feature ciede --json"
@@ -126,10 +122,24 @@ def get_img_height(path):
     return int(lines[0].strip())
 
 
+
 def convert_img(inn, out):
-    #10le -strict -1
-    cmd = "%s -y -i %s -pix_fmt yuv420p10le -strict -1 %s" % (convert, inn, out)
+    # PNG24: needed otherwise grayscale image lose their sRGB colorspace
+    cmd = "convert %s PNG24:%s" % (inn, out)
     run_silent(cmd)
+
+
+def remove_alpha(inn, out):
+    # PNG24: needed otherwise grayscale image lose their sRGB colorspace
+    cmd = "convert %s -alpha off PNG24:%s" % (inn, out)
+    run_silent(cmd)
+    
+    
+def convertff_img(inn, out):
+    #10le -strict -1
+    cmd = "ffmpeg -y -i %s -pix_fmt yuv444p -vf scale=in_range=full:out_range=full %s" % (inn, out)
+    run_silent(cmd)
+
 
 def get_score(y4m1, y4m2, target_json):
     cmd = "%s  -r %s -d %s -o %s" % (vmaf, y4m1, y4m2, target_json)
@@ -161,15 +171,57 @@ def get_score(y4m1, y4m2, target_json):
     return ssim_score, msssim_score, ciede2000_score, psnrhvs_score, vmaf_score
 
 
+def get_butteraugli(png1, png2):
+    cmd = "butteraugli %s %s" % (png1, png2)
+    proc = subprocess.Popen(
+        split(cmd),
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        encoding="utf-8")
+    out, err = proc.communicate()
+    if proc.returncode != 0:
+        sys.stderr.write("Failed process: %s\n" % (cmd))
+        sys.exit(proc.returncode)
+    
+    butteraugli_score = float(out.split(os.linesep)[0])
+    return butteraugli_score
+
+
+def get_dssim(png1, png2):
+    cmd = "dssim %s %s" % (png1, png2)
+    proc = subprocess.Popen(
+        split(cmd),
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        encoding="utf-8")
+    out, err = proc.communicate()
+    if proc.returncode != 0:
+        sys.stderr.write("Failed process: %s\n" % (cmd))
+        sys.exit(proc.returncode)
+    line = out.split(os.linesep)[0]
+    dssim_score = float(re.search('^\d+\.?\d*', line).group(0))
+    return dssim_score
+
+
+def get_ssimulacra(png1, png2):
+    cmd = "ssimulacra %s %s" % (png1, png2)
+    proc = subprocess.Popen(
+        split(cmd),
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        encoding="utf-8")
+    out, err = proc.communicate()
+    if proc.returncode != 0:
+        sys.stderr.write("Failed process: %s\n" % (cmd))
+        sys.exit(proc.returncode)
+    ssimulacra_score = float(out.split(os.linesep)[0]) 
+    return ssimulacra_score
+
+
 # Returns tuple containing:
 #   (target_file_size, encode_time, decode_time)
 def get_lossless_results(subset_name, origpng, format, format_recipe):
-
-    origpng_y4m = path_for_file_in_tmp(origpng) + ".y4m"
-    convert_img(origpng, origpng_y4m)
-    origpng_ppm = path_for_file_in_tmp(origpng) + ".ppm"
-    convert_img(origpng, origpng_ppm)
-
+    
     target = format.upper() + "_out/" + subset_name + "/" + os.path.splitext(
         os.path.basename(origpng))[0] + "/" + os.path.splitext(
             os.path.basename(origpng))[0] + "-lossless"
@@ -189,8 +241,6 @@ def get_lossless_results(subset_name, origpng, format, format_recipe):
     target_file_size = os.path.getsize(target)
 
     try:
-        os.remove(origpng_y4m)
-        os.remove(origpng_ppm)
         os.remove(target_dec)
     except FileNotFoundError:
         pass
@@ -203,10 +253,9 @@ def get_lossless_results(subset_name, origpng, format, format_recipe):
 #   psnrhvsm_score, msssim_score)
 def get_lossy_results(subset_name, origpng, width, height, format,
                       format_recipe, quality):
-    origpng_y4m = path_for_file_in_tmp(origpng) + ".y4m"
-    convert_img(origpng, origpng_y4m)
-    origpng_ppm = path_for_file_in_tmp(origpng) + ".ppm"
-    convert_img(origpng, origpng_ppm)
+
+    origy4m = path_for_file_in_tmp(origpng) + ".y4m"
+    convertff_img(origpng, origy4m)
 
     target = format.upper() + "_out/" + subset_name + "/" + os.path.splitext(
         os.path.basename(origpng))[0] + "/" + os.path.splitext(
@@ -225,20 +274,30 @@ def get_lossy_results(subset_name, origpng, width, height, format,
     cmd = string.Template(format_recipe['decode_cmd']).substitute(locals())
     wrapped = wrapper(run_silent, cmd)
     decode_time = Timer(wrapped).timeit(1)
-
-    if format_recipe['decode_extension'] == 'y4m':
-        target_y4m = target_dec
+    
+    if format_recipe['decode_extension'] != "png":
+        target_png = path_for_file_in_tmp(target_dec) + ".png"
+        convert_img(target_dec, target_png)
     else:
-        target_y4m = path_for_file_in_tmp(target_dec) + ".y4m"
-        convert_img(target_dec, target_y4m)
+        target_png = target_dec
+
+    # libavif bug?
+    if format_recipe['encode_extension'] == "avif":
+        remove_alpha(target_png, target_png)
         
-    ssim_score, msssim_score, ciede2000_score, psnrhvs_score, vmaf_score = get_score(origpng_y4m, target_y4m, target_json)
+    target_y4m = path_for_file_in_tmp(target_dec) + ".y4m"
+    convertff_img(target_dec, target_y4m)
+        
+    ssim_score, msssim_score, ciede2000_score, psnrhvs_score, vmaf_score = get_score(origy4m, target_y4m, target_json)
+    
+    butteraugli_score = get_butteraugli(origpng, target_png)
+    dssim_score = get_dssim(origpng, target_png)
+    ssimulacra_score = get_ssimulacra(origpng, target_png)
 
     target_file_size = os.path.getsize(target)
 
     try:
-        os.remove(origpng_y4m)
-        os.remove(origpng_ppm)
+        os.remove(origy4m)
         os.remove(target_dec)
         os.remove(target_json)
         os.remove(target_y4m)
@@ -246,7 +305,8 @@ def get_lossy_results(subset_name, origpng, width, height, format,
         pass
 
     return (target_file_size, encode_time, decode_time, ssim_score,
-            msssim_score, ciede2000_score, psnrhvs_score, vmaf_score)
+            msssim_score, ciede2000_score, psnrhvs_score, vmaf_score,
+            butteraugli_score, dssim_score, ssimulacra_score)
 
 
 def process_image(args):
@@ -316,7 +376,7 @@ def process_image(args):
     file = open(path, "w")
 
     file.write(
-        "file_name:quality:orig_file_size:compressed_file_size:pixels:bpp:compression_ratio:encode_time:decode_time:ssim_score:msssim_score:ciede2000_score:psnrhvs_score:vmaf_score\n"
+        "file_name:quality:orig_file_size:compressed_file_size:pixels:bpp:compression_ratio:encode_time:decode_time:ssim_score:msssim_score:ciede2000_score:psnrhvs_score:vmaf_score:butteraugli_score:dssim_score:ssimulacra_score\n"
     )
     if isfloat:
         quality_list = list(np.arange(start, end, step))
@@ -332,11 +392,11 @@ def process_image(args):
                                     format, format_recipe, quality)
         bpp = results[0] * 8 / pixels
         compression_ratio = orig_file_size / results[0]
-        file.write("%s:%f:%d:%d:%d:%f:%f:%f:%f:%f:%f:%f:%f:%f\n" %
+        file.write("%s:%f:%d:%d:%d:%f:%f:%f:%f:%f:%f:%f:%f:%f:%f:%f:%f\n" %
                    (os.path.splitext(os.path.basename(origpng))[0], quality,
                     orig_file_size, results[0], pixels, bpp, compression_ratio,
                     results[1], results[2], results[3], results[4], results[5],
-                    results[6], results[7]))
+                    results[6], results[7], results[8], results[9], results[10]))
         i += 1
 
     file.close()
@@ -357,7 +417,7 @@ def main(argv):
 
     if len(argv) != 4:
         print(
-            "rd_collect.py: Generate compressed images from PNGs and calculate quality and speed metrics for a given format"
+            "rd_collect.py: Generate compressed images from Y4Ms and calculate quality and speed metrics for a given format"
         )
         print("Arg 1: format to test {}".format(supported_formats))
         print("Arg 2: name of the subset to test (e.g. 'subset1')")

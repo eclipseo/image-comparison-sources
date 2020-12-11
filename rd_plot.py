@@ -1,5 +1,5 @@
 #!/usr/bin/python3
-# Copyright 2017-2018 Wyoh Knott
+# Copyright 2017-2020 Robert-André Mauchin
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
@@ -160,6 +160,76 @@ def generate_plots(path, requested_formats):
     plt.savefig(path + "/" + subset_name + ".vmaf.(" +
                 ','.join(requested_formats) + ").svg")
     plt.close(fig)
+    plt.close(fig)
+
+    fig = plt.figure()
+    plt.figure(figsize=(25, 15))
+    plt.title(
+        "Quality according to Butteraugli in function of number of bits per pixel")
+    plt.suptitle(subset_name)
+    plt.xlabel("Bits per pixels")
+    plt.ylabel("Score (Butteraugli)")
+    plt.xscale("log")
+    plt.xlim([0.0001, 10])
+    plt.ylim([75, 100])
+    plt.minorticks_on()
+    plt.grid(b=True, which='both', color='0.65', linestyle='--')
+    for format in data:
+        plt.plot(
+            data[format]["avg_bpp"],
+            data[format]["wavg_butteraugli_score"],
+            label=format)
+    plt.legend()
+    plt.savefig(path + "/" + subset_name + ".butteraugli.(" +
+                ','.join(requested_formats) + ").svg")
+    plt.close(fig)
+
+
+    fig = plt.figure()
+    plt.figure(figsize=(25, 15))
+    plt.title(
+        "Quality according to DSSIM in function of number of bits per pixel")
+    plt.suptitle(subset_name)
+    plt.xlabel("Bits per pixels")
+    plt.ylabel("Score (DSSIM)")
+    plt.xscale("log")
+    plt.xlim([0.0001, 2])
+    plt.ylim([75, 100])
+    plt.minorticks_on()
+    plt.grid(b=True, which='both', color='0.65', linestyle='--')
+    for format in data:
+        plt.plot(
+            data[format]["avg_bpp"],
+            data[format]["wavg_dssim_score"],
+            label=format)
+    plt.legend()
+    plt.savefig(path + "/" + subset_name + ".dssim.(" +
+                ','.join(requested_formats) + ").svg")
+    plt.close(fig)
+
+
+    fig = plt.figure()
+    plt.figure(figsize=(25, 15))
+    plt.title(
+        "Quality according to SSimulacra in function of number of bits per pixel")
+    plt.suptitle(subset_name)
+    plt.xlabel("Bits per pixels")
+    plt.ylabel("Score (SSimulacra)")
+    plt.xscale("log")
+    plt.xlim([0.0001, 2])
+    plt.ylim([75, 100])
+    plt.minorticks_on()
+    plt.grid(b=True, which='both', color='0.65', linestyle='--')
+    for format in data:
+        plt.plot(
+            data[format]["avg_bpp"],
+            data[format]["wavg_ssimulacra_score"],
+            label=format)
+    plt.legend()
+    plt.savefig(path + "/" + subset_name + ".ssimulacra.(" +
+                ','.join(requested_formats) + ").svg")
+    plt.close(fig)
+
 
     fig = plt.figure()
     plt.figure(figsize=(25, 15))
@@ -168,7 +238,7 @@ def generate_plots(path, requested_formats):
     plt.xlabel("Bits per pixel")
     plt.ylabel("Time (s)")
     plt.xscale("log")
-    plt.xlim([0.1, 2])
+    plt.xlim([0.0001, 2])
     plt.ylim([0, 25])
     plt.minorticks_on()
     plt.grid(b=True, which='both', color='0.65', linestyle='--')

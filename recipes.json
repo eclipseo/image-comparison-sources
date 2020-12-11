@@ -1,13 +1,13 @@
 {
     "recipes": {
-        "avif": {
+        "aom": {
             "quality_start": 4,
             "quality_end": 63,
             "quality_step": 1,
             "encode_extension": "avif",
-            "decode_extension": "y4m",
-            "encode_cmd": "avifenc --tilecolslog2 1 -c aom -s 4 --min $quality --max $quality -o $target $origpng_y4m",
-            "lossless_cmd": "avifenc --lossless --tilecolslog2 1 -c aom -s 4 -o $target $origpng_y4m",
+            "decode_extension": "png",
+            "encode_cmd": "avifenc --tilecolslog2 1 -c aom -s d --min $quality --max $quality -o $target $origpng",
+            "lossless_cmd": "avifenc --lossless --tilecolslog2 1 -c aom -s d -o $target $origpng",
             "decode_cmd": "avifdec -c dav1d $target $target_dec",
             "export_to_png": true
         }, 
@@ -39,9 +39,31 @@
             "quality_step": 1,
             "encode_extension": "jpg",
             "decode_extension": "ppm",
-            "encode_cmd": "cjpeg -quality $quality -outfile $target $origpng_ppm",
-            "lossless_cmd": "cjpeg -rgb -quality 100 -outfile $target $origpng_ppm",
+            "encode_cmd": "cjpeg -quality $quality -outfile $target $origpng",
+            "lossless_cmd": "cjpeg -rgb -quality 100 -outfile $target $origpng",
             "decode_cmd": "djpeg -outfile $target_dec $target",
+            "export_to_png": true
+        },
+        "rav1e": {
+            "quality_start": 1,
+            "quality_end": 201,
+            "quality_step": 5,
+            "encode_extension": "avif",
+            "decode_extension": "png",
+            "encode_cmd": "avifenc --tilecolslog2 1 -c rav1e -s d --min $quality --max $quality -o $target $origpng",
+            "lossless_cmd": "avifenc --lossless --tilecolslog2 1 -c rav1e -s d -o $target $origpng",
+            "decode_cmd": "avifdec -c dav1d $target $target_dec",
+            "export_to_png": true
+        },
+        "svt-av1": {
+            "quality_start": 4,
+            "quality_end": 63,
+            "quality_step": 1,
+            "encode_extension": "avif",
+            "decode_extension": "png",
+            "encode_cmd": "avifenc --tilecolslog2 1 -c svt -s d -y 420 --min $quality --max $quality -o $target $origpng",
+            "lossless_cmd": "avifenc --lossless --tilecolslog2 1 -c svt -s d -y 420 -o $target $origpng",
+            "decode_cmd": "avifdec -c dav1d $target $target_dec",
             "export_to_png": true
         },
         "webp": {
@@ -59,7 +81,7 @@
             "quality_start": 0,
             "quality_end": 95,
             "quality_step": 1,
-            "encode_extension": "webp",
+            "encode_extension": "wp2",
             "decode_extension": "png",
             "encode_cmd": "cwp2 -mt 2 -q $quality -o $target $origpng",
             "lossless_cmd": "cwp2 -mt 2 -q 100 -o $target $origpng",

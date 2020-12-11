@@ -26,8 +26,8 @@ Variables recognized:
  - $quality: the quality parameter
  - $target: the filename of the encoded image
  - $target_dec: the filename of the decoded image
- - $origpng, $origpng_y4m, $origpng_ppm: the original image to compress, 
- in PNG, Y4M, or PPM format.
+ - $origpng, $origy4m: the original image to compress, 
+ in PNG or Y4M format.
 
 ## rd_collect.py
 

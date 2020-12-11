@@ -1,5 +1,5 @@
 #!/usr/bin/python3
-# Copyright 2017-2018 Wyoh Knott
+# Copyright 2017-2020 Robert-André Mauchin
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
@@ -110,13 +110,14 @@ def get_lossy_average(args):
         "file_name", "quality", "orig_file_size", "compressed_file_size",
         "pixels", "bpp", "compression_ratio", "encode_time", "decode_time",
         "ssim_score", "msssim_score", "ciede2000_score", "psnrhvs_score",
-        "vmaf_score"
+        "vmaf_score", "butteraugli_score", "dssim_score", "ssimulacra_score"
     ]
     final_columns = [
         "quality", "avg_bpp", "avg_compression_ratio", "avg_space_saving",
         "wavg_encode_time", "wavg_decode_time", "wavg_ssim_score",
          "wavg_msssim_score", "wavg_ciede2000_score","wavg_psnrhvs_score",
-        "wavg_vmaf_score"
+        "wavg_vmaf_score", "wavg_butteraugli_score", "wavg_dssim_score", 
+        "wavg_ssimulacra_score"
     ]
     final_data = pd.DataFrame(columns=final_columns)
 
@@ -157,12 +158,19 @@ def get_lossy_average(args):
             merged_data[i]["psnrhvs_score"], weights=merged_data[i]["pixels"])
         wavg_vmaf_score = np.average(
             merged_data[i]["vmaf_score"], weights=merged_data[i]["pixels"])
+        wavg_butteraugli_score = np.average(
+            merged_data[i]["butteraugli_score"], weights=merged_data[i]["pixels"])
+        wavg_dssim_score = np.average(
+            merged_data[i]["dssim_score"], weights=merged_data[i]["pixels"])
+        wavg_ssimulacra_score = np.average(
+            merged_data[i]["ssimulacra_score"], weights=merged_data[i]["pixels"])
 
         final_data.loc[i] = [
             quality, avg_bpp, avg_compression_ratio, avg_space_saving,
             wavg_encode_time, wavg_decode_time, wavg_ssim_score,
              wavg_msssim_score, wavg_ciede2000_score, wavg_psnrhvs_score,
-            wavg_vmaf_score
+            wavg_vmaf_score, wavg_butteraugli_score, wavg_dssim_score,
+            wavg_ssimulacra_score
         ]
     results_file = path + "/" + os.path.basename(
         path) + "." + format + ".lossy.out"
