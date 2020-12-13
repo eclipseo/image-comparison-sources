@@ -219,7 +219,7 @@ def generate_plots(path, requested_formats):
     plt.xscale("log")
     plt.yscale("log")
     plt.xlim([0.1, 5])
-    plt.ylim([0.05, 2])
+    plt.ylim([0.005, 0.2])
     plt.minorticks_on()
     plt.grid(b=True, which="both", color="0.65", linestyle="--")
     for format in data:
