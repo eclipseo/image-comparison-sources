@@ -34,7 +34,8 @@ import glob
 import numpy as np
 import pandas as pd
 import matplotlib
-matplotlib.use('Cairo')
+
+matplotlib.use("Cairo")
 import matplotlib.pyplot as plt
 
 
@@ -49,187 +50,192 @@ def generate_plots(path, requested_formats):
     # SSIM
     fig = plt.figure()
     plt.figure(figsize=(25, 15))
-    plt.title(
-        "Quality according to SSIM in function of number of bits per pixel")
+    plt.title("Quality according to SSIM in function of number of bits per pixel")
     plt.suptitle(subset_name)
     plt.xlabel("Bits per pixels")
     plt.ylabel("Float SSIM")
     plt.xscale("log")
-    plt.xlim([0.1, 2])
+    plt.xlim([0.1, 5])
     plt.ylim([0.98, 1])
     plt.minorticks_on()
-    plt.grid(b=True, which='both', color='0.65', linestyle='--')
+    plt.grid(b=True, which="both", color="0.65", linestyle="--")
     for format in data:
-        plt.plot(
-            data[format]["avg_bpp"],
-            data[format]["wavg_ssim_score"],
-            label=format)
+        plt.plot(data[format]["avg_bpp"], data[format]["wavg_ssim_score"], label=format)
     plt.legend()
-    plt.savefig(path + "/" + subset_name + ".ssim.(" +
-                ','.join(requested_formats) + ").svg")
+    plt.savefig(
+        path + "/" + subset_name + ".ssim.(" + ",".join(requested_formats) + ").svg"
+    )
     plt.close(fig)
 
     # CIEDE2000
     fig = plt.figure()
     plt.figure(figsize=(25, 15))
-    plt.title(
-        "Quality according to CIEDE2000 in function of number of bits per pixel"
-    )
+    plt.title("Quality according to CIEDE2000 in function of number of bits per pixel")
     plt.suptitle(subset_name)
     plt.xlabel("Bits per pixels")
     plt.ylabel("dB (CIEDE2000)")
     plt.xscale("log")
-    plt.xlim([0.1, 2])
+    plt.xlim([0.1, 5])
     plt.ylim([30, 50])
     plt.minorticks_on()
-    plt.grid(b=True, which='both', color='0.65', linestyle='--')
+    plt.grid(b=True, which="both", color="0.65", linestyle="--")
     for format in data:
         plt.plot(
-            data[format]["avg_bpp"],
-            data[format]["wavg_ciede2000_score"],
-            label=format)
+            data[format]["avg_bpp"], data[format]["wavg_ciede2000_score"], label=format
+        )
     plt.legend()
-    plt.savefig(path + "/" + subset_name + ".ciede2000.(" +
-                ','.join(requested_formats) + ").svg")
+    plt.savefig(
+        path
+        + "/"
+        + subset_name
+        + ".ciede2000.("
+        + ",".join(requested_formats)
+        + ").svg"
+    )
     plt.close(fig)
 
     # MS-SSIM
     fig = plt.figure()
     plt.figure(figsize=(25, 15))
-    plt.title(
-        "Quality according to MS-SSIM in function of number of bits per pixel")
+    plt.title("Quality according to MS-SSIM in function of number of bits per pixel")
     plt.suptitle(subset_name)
     plt.xlabel("Bits per pixels")
     plt.ylabel("Float MS-SSIM")
     plt.xscale("log")
-    plt.xlim([0.1, 2])
+    plt.xlim([0.1, 5])
     plt.ylim([0.98, 1])
     plt.minorticks_on()
-    plt.grid(b=True, which='both', color='0.65', linestyle='--')
+    plt.grid(b=True, which="both", color="0.65", linestyle="--")
     for format in data:
         plt.plot(
-            data[format]["avg_bpp"],
-            data[format]["wavg_msssim_score"],
-            label=format)
+            data[format]["avg_bpp"], data[format]["wavg_msssim_score"], label=format
+        )
     plt.legend()
-    plt.savefig(path + "/" + subset_name + ".ms-ssim.(" +
-                ','.join(requested_formats) + ").svg")
+    plt.savefig(
+        path + "/" + subset_name + ".ms-ssim.(" + ",".join(requested_formats) + ").svg"
+    )
     plt.close(fig)
 
     fig = plt.figure()
     plt.figure(figsize=(25, 15))
-    plt.title(
-        "Quality according to PSNR-HVS in function of number of bits per pixel"
-    )
+    plt.title("Quality according to PSNR-HVS in function of number of bits per pixel")
     plt.suptitle(subset_name)
     plt.xlabel("Bits per pixels")
     plt.ylabel("dB (PSNR-HVS)")
     plt.xscale("log")
-    plt.xlim([0.1, 2])
+    plt.xlim([0.1, 5])
     plt.ylim([25, 50])
     plt.minorticks_on()
-    plt.grid(b=True, which='both', color='0.65', linestyle='--')
+    plt.grid(b=True, which="both", color="0.65", linestyle="--")
     for format in data:
         plt.plot(
-            data[format]["avg_bpp"],
-            data[format]["wavg_psnrhvs_score"],
-            label=format)
+            data[format]["avg_bpp"], data[format]["wavg_psnrhvs_score"], label=format
+        )
     plt.legend()
-    plt.savefig(path + "/" + subset_name + ".psnr-hvs.(" +
-                ','.join(requested_formats) + ").svg")
+    plt.savefig(
+        path + "/" + subset_name + ".psnr-hvs.(" + ",".join(requested_formats) + ").svg"
+    )
     plt.close(fig)
 
     fig = plt.figure()
     plt.figure(figsize=(25, 15))
-    plt.title(
-        "Quality according to VMAF in function of number of bits per pixel")
+    plt.title("Quality according to VMAF in function of number of bits per pixel")
     plt.suptitle(subset_name)
     plt.xlabel("Bits per pixels")
     plt.ylabel("Score (VMAF)")
     plt.xscale("log")
-    plt.xlim([0.1, 2])
+    plt.xlim([0.1, 5])
     plt.ylim([75, 100])
     plt.minorticks_on()
-    plt.grid(b=True, which='both', color='0.65', linestyle='--')
+    plt.grid(b=True, which="both", color="0.65", linestyle="--")
     for format in data:
-        plt.plot(
-            data[format]["avg_bpp"],
-            data[format]["wavg_vmaf_score"],
-            label=format)
+        plt.plot(data[format]["avg_bpp"], data[format]["wavg_vmaf_score"], label=format)
     plt.legend()
-    plt.savefig(path + "/" + subset_name + ".vmaf.(" +
-                ','.join(requested_formats) + ").svg")
+    plt.savefig(
+        path + "/" + subset_name + ".vmaf.(" + ",".join(requested_formats) + ").svg"
+    )
     plt.close(fig)
     plt.close(fig)
 
     fig = plt.figure()
     plt.figure(figsize=(25, 15))
     plt.title(
-        "Quality according to Butteraugli in function of number of bits per pixel")
+        "Quality according to Butteraugli in function of number of bits per pixel"
+    )
     plt.suptitle(subset_name)
     plt.xlabel("Bits per pixels")
     plt.ylabel("Score (Butteraugli)")
     plt.xscale("log")
-    plt.xlim([0.0001, 10])
-    plt.ylim([75, 100])
+    plt.yscale("log")
+    plt.xlim([0.1, 5])
+    plt.ylim([1, 20])
     plt.minorticks_on()
-    plt.grid(b=True, which='both', color='0.65', linestyle='--')
+    plt.grid(b=True, which="both", color="0.65", linestyle="--")
     for format in data:
         plt.plot(
             data[format]["avg_bpp"],
             data[format]["wavg_butteraugli_score"],
-            label=format)
+            label=format,
+        )
     plt.legend()
-    plt.savefig(path + "/" + subset_name + ".butteraugli.(" +
-                ','.join(requested_formats) + ").svg")
+    plt.savefig(
+        path
+        + "/"
+        + subset_name
+        + ".butteraugli.("
+        + ",".join(requested_formats)
+        + ").svg"
+    )
     plt.close(fig)
-
 
     fig = plt.figure()
     plt.figure(figsize=(25, 15))
-    plt.title(
-        "Quality according to DSSIM in function of number of bits per pixel")
+    plt.title("Quality according to DSSIM in function of number of bits per pixel")
     plt.suptitle(subset_name)
     plt.xlabel("Bits per pixels")
     plt.ylabel("Score (DSSIM)")
     plt.xscale("log")
-    plt.xlim([0.0001, 2])
-    plt.ylim([75, 100])
+    plt.yscale("log")
+    plt.xlim([0.1, 5])
+    plt.ylim([0.0005, 0.20])
     plt.minorticks_on()
-    plt.grid(b=True, which='both', color='0.65', linestyle='--')
+    plt.grid(b=True, which="both", color="0.65", linestyle="--")
     for format in data:
         plt.plot(
-            data[format]["avg_bpp"],
-            data[format]["wavg_dssim_score"],
-            label=format)
+            data[format]["avg_bpp"], data[format]["wavg_dssim_score"], label=format
+        )
     plt.legend()
-    plt.savefig(path + "/" + subset_name + ".dssim.(" +
-                ','.join(requested_formats) + ").svg")
+    plt.savefig(
+        path + "/" + subset_name + ".dssim.(" + ",".join(requested_formats) + ").svg"
+    )
     plt.close(fig)
-
 
     fig = plt.figure()
     plt.figure(figsize=(25, 15))
-    plt.title(
-        "Quality according to SSimulacra in function of number of bits per pixel")
+    plt.title("Quality according to SSimulacra in function of number of bits per pixel")
     plt.suptitle(subset_name)
     plt.xlabel("Bits per pixels")
     plt.ylabel("Score (SSimulacra)")
     plt.xscale("log")
-    plt.xlim([0.0001, 2])
-    plt.ylim([75, 100])
+    plt.yscale("log")
+    plt.xlim([0.1, 5])
+    plt.ylim([0.05, 2])
     plt.minorticks_on()
-    plt.grid(b=True, which='both', color='0.65', linestyle='--')
+    plt.grid(b=True, which="both", color="0.65", linestyle="--")
     for format in data:
         plt.plot(
-            data[format]["avg_bpp"],
-            data[format]["wavg_ssimulacra_score"],
-            label=format)
+            data[format]["avg_bpp"], data[format]["wavg_ssimulacra_score"], label=format
+        )
     plt.legend()
-    plt.savefig(path + "/" + subset_name + ".ssimulacra.(" +
-                ','.join(requested_formats) + ").svg")
+    plt.savefig(
+        path
+        + "/"
+        + subset_name
+        + ".ssimulacra.("
+        + ",".join(requested_formats)
+        + ").svg"
+    )
     plt.close(fig)
-
 
     fig = plt.figure()
     plt.figure(figsize=(25, 15))
@@ -238,20 +244,26 @@ def generate_plots(path, requested_formats):
     plt.xlabel("Bits per pixel")
     plt.ylabel("Time (s)")
     plt.xscale("log")
-    plt.xlim([0.0001, 2])
-    plt.ylim([0, 25])
+    plt.yscale("log")
+    plt.xlim([0.1, 5])
+    plt.ylim([0.01, 200])
     plt.minorticks_on()
-    plt.grid(b=True, which='both', color='0.65', linestyle='--')
+    plt.grid(b=True, which="both", color="0.65", linestyle="--")
     for format in data:
         plt.plot(
-            data[format]["avg_bpp"],
-            data[format]["wavg_encode_time"],
-            label=format)
+            data[format]["avg_bpp"], data[format]["wavg_encode_time"], label=format
+        )
     plt.legend()
-    plt.savefig(path + "/" + subset_name + ".encoding_time.(" +
-                ','.join(requested_formats) + ").svg")
+    plt.savefig(
+        path
+        + "/"
+        + subset_name
+        + ".encoding_time.("
+        + ",".join(requested_formats)
+        + ").svg"
+    )
     plt.close(fig)
-    
+
     plt.close("all")
 
 
@@ -260,18 +272,16 @@ def main(argv):
         raise Exception("Python 3.5 or a more recent version is required.")
 
     if len(argv) < 2 or len(argv) > 3:
-        print(
-            "Arg 1: Path to a subset with results generated by rd_average.py")
-        print("       For ex: rd_average.py \"results/subset1\"")
+        print("Arg 1: Path to a subset with results generated by rd_average.py")
+        print('       For ex: rd_average.py "results/subset1"')
         print("Arg 2: Comma-separated list of format to plot.")
-        print(
-            "       For ex: rd_average.py \"results/subset1\" \"bpg,mozjpeg,flif,vp9\""
-        )
+        print('       For ex: rd_average.py "results/subset1" "bpg,mozjpeg,flif,vp9"')
 
     results_folder = os.path.normpath(argv[1])
 
-    if (not os.path.isdir(results_folder)
-            or not glob.glob(results_folder + "/*.lossy.out")):
+    if not os.path.isdir(results_folder) or not glob.glob(
+        results_folder + "/*.lossy.out"
+    ):
         print(
             "Could not find all results file. Please make sure the path provided is correct."
         )
@@ -288,8 +298,11 @@ def main(argv):
 
     for format in requested_formats:
         if format not in available_formats:
-            print("The format {} is not in the list of available formats {}".
-                  format(format, available_formats))
+            print(
+                "The format {} is not in the list of available formats {}".format(
+                    format, available_formats
+                )
+            )
             return
 
     generate_plots(results_folder, requested_formats)

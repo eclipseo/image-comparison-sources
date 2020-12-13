@@ -57,12 +57,12 @@ def split(cmd):
     lex = shlex.shlex(cmd)
     lex.quotes = '"'
     lex.whitespace_split = True
-    lex.commenters = ''
+    lex.commenters = ""
     return list(lex)
 
 
 def run_silent(cmd):
-    FNULL = open(os.devnull, 'w')
+    FNULL = open(os.devnull, "w")
     rv = subprocess.call(split(cmd), stdout=FNULL, stderr=FNULL)
     if rv != 0:
         sys.stderr.write("Failure from subprocess:\n")
@@ -95,10 +95,8 @@ def path_for_file_in_tmp(path):
 def get_img_width(path):
     cmd = "identify -format %%w %s" % (path)
     proc = subprocess.Popen(
-        split(cmd),
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
-        encoding="utf-8")
+        split(cmd), stdout=subprocess.PIPE, stderr=subprocess.PIPE, encoding="utf-8"
+    )
     out, err = proc.communicate()
     if proc.returncode != 0:
         sys.stderr.write("Failed process: identify\n")
@@ -110,17 +108,14 @@ def get_img_width(path):
 def get_img_height(path):
     cmd = "identify -format %%h %s" % (path)
     proc = subprocess.Popen(
-        split(cmd),
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
-        encoding="utf-8")
+        split(cmd), stdout=subprocess.PIPE, stderr=subprocess.PIPE, encoding="utf-8"
+    )
     out, err = proc.communicate()
     if proc.returncode != 0:
         sys.stderr.write("Failed process: identify\n")
         sys.exit(proc.returncode)
     lines = out.split(os.linesep)
     return int(lines[0].strip())
-
 
 
 def convert_img(inn, out):
@@ -133,56 +128,55 @@ def remove_alpha(inn, out):
     # PNG24: needed otherwise grayscale image lose their sRGB colorspace
     cmd = "convert %s -alpha off PNG24:%s" % (inn, out)
     run_silent(cmd)
-    
-    
+
+
 def convertff_img(inn, out):
-    #10le -strict -1
-    cmd = "ffmpeg -y -i %s -pix_fmt yuv444p -vf scale=in_range=full:out_range=full %s" % (inn, out)
+    # 10le -strict -1
+    cmd = (
+        "ffmpeg -y -i %s -pix_fmt yuv444p -vf scale=in_range=full:out_range=full %s"
+        % (inn, out)
+    )
     run_silent(cmd)
 
 
 def get_score(y4m1, y4m2, target_json):
     cmd = "%s  -r %s -d %s -o %s" % (vmaf, y4m1, y4m2, target_json)
     proc = subprocess.Popen(
-        split(cmd),
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
-        encoding="utf-8")
+        split(cmd), stdout=subprocess.PIPE, stderr=subprocess.PIPE, encoding="utf-8"
+    )
     out, err = proc.communicate()
     if proc.returncode != 0:
         sys.stderr.write("Failed process: %s\n" % (vmaf))
         sys.exit(proc.returncode)
-        
+
     with open(target_json) as f:
         data = f.read()
         scores = json.loads(data)
         for i in scores["pooled_metrics"]:
-            if (i["metric"] == "psnr_hvs"):
+            if i["metric"] == "psnr_hvs":
                 psnrhvs_score = i["pooling_methods"]["mean"]
-            elif (i["metric"] == "float_ssim"):
+            elif i["metric"] == "float_ssim":
                 ssim_score = i["pooling_methods"]["mean"]
-            elif (i["metric"] == "float_ms_ssim"):
+            elif i["metric"] == "float_ms_ssim":
                 msssim_score = i["pooling_methods"]["mean"]
-            elif (i["metric"] == "ciede2000"):
+            elif i["metric"] == "ciede2000":
                 ciede2000_score = i["pooling_methods"]["mean"]
-            elif (i["metric"] == "vmaf"):
+            elif i["metric"] == "vmaf":
                 vmaf_score = i["pooling_methods"]["mean"]
-        
+
     return ssim_score, msssim_score, ciede2000_score, psnrhvs_score, vmaf_score
 
 
 def get_butteraugli(png1, png2):
     cmd = "butteraugli %s %s" % (png1, png2)
     proc = subprocess.Popen(
-        split(cmd),
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
-        encoding="utf-8")
+        split(cmd), stdout=subprocess.PIPE, stderr=subprocess.PIPE, encoding="utf-8"
+    )
     out, err = proc.communicate()
     if proc.returncode != 0:
         sys.stderr.write("Failed process: %s\n" % (cmd))
         sys.exit(proc.returncode)
-    
+
     butteraugli_score = float(out.split(os.linesep)[0])
     return butteraugli_score
 
@@ -190,51 +184,54 @@ def get_butteraugli(png1, png2):
 def get_dssim(png1, png2):
     cmd = "dssim %s %s" % (png1, png2)
     proc = subprocess.Popen(
-        split(cmd),
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
-        encoding="utf-8")
+        split(cmd), stdout=subprocess.PIPE, stderr=subprocess.PIPE, encoding="utf-8"
+    )
     out, err = proc.communicate()
     if proc.returncode != 0:
         sys.stderr.write("Failed process: %s\n" % (cmd))
         sys.exit(proc.returncode)
     line = out.split(os.linesep)[0]
-    dssim_score = float(re.search('^\d+\.?\d*', line).group(0))
+    dssim_score = float(re.search("^\d+\.?\d*", line).group(0))
     return dssim_score
 
 
 def get_ssimulacra(png1, png2):
     cmd = "ssimulacra %s %s" % (png1, png2)
     proc = subprocess.Popen(
-        split(cmd),
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
-        encoding="utf-8")
+        split(cmd), stdout=subprocess.PIPE, stderr=subprocess.PIPE, encoding="utf-8"
+    )
     out, err = proc.communicate()
     if proc.returncode != 0:
         sys.stderr.write("Failed process: %s\n" % (cmd))
         sys.exit(proc.returncode)
-    ssimulacra_score = float(out.split(os.linesep)[0]) 
+    ssimulacra_score = float(out.split(os.linesep)[0])
     return ssimulacra_score
 
 
 # Returns tuple containing:
 #   (target_file_size, encode_time, decode_time)
 def get_lossless_results(subset_name, origpng, format, format_recipe):
-    
-    target = format.upper() + "_out/" + subset_name + "/" + os.path.splitext(
-        os.path.basename(origpng))[0] + "/" + os.path.splitext(
-            os.path.basename(origpng))[0] + "-lossless"
+
+    target = (
+        format.upper()
+        + "_out/"
+        + subset_name
+        + "/"
+        + os.path.splitext(os.path.basename(origpng))[0]
+        + "/"
+        + os.path.splitext(os.path.basename(origpng))[0]
+        + "-lossless"
+    )
     create_dir(target)
     target_dec = path_for_file_in_tmp(target)
 
-    target += "." + format_recipe['encode_extension']
-    cmd = string.Template(format_recipe['lossless_cmd']).substitute(locals())
+    target += "." + format_recipe["encode_extension"]
+    cmd = string.Template(format_recipe["lossless_cmd"]).substitute(locals())
     wrapped = wrapper(run_silent, cmd)
     encode_time = Timer(wrapped).timeit(5)
 
-    target_dec += "." + format_recipe['decode_extension']
-    cmd = string.Template(format_recipe['decode_cmd']).substitute(locals())
+    target_dec += "." + format_recipe["decode_extension"]
+    cmd = string.Template(format_recipe["decode_cmd"]).substitute(locals())
     wrapped = wrapper(run_silent, cmd)
     decode_time = Timer(wrapped).timeit(5)
 
@@ -251,45 +248,56 @@ def get_lossless_results(subset_name, origpng, format, format_recipe):
 # Returns tuple containing:
 #   (target_file_size, encode_time, decode_time, yssim_score, rgbssim_score,
 #   psnrhvsm_score, msssim_score)
-def get_lossy_results(subset_name, origpng, width, height, format,
-                      format_recipe, quality):
+def get_lossy_results(
+    subset_name, origpng, width, height, format, format_recipe, quality
+):
 
     origy4m = path_for_file_in_tmp(origpng) + ".y4m"
     convertff_img(origpng, origy4m)
 
-    target = format.upper() + "_out/" + subset_name + "/" + os.path.splitext(
-        os.path.basename(origpng))[0] + "/" + os.path.splitext(
-            os.path.basename(origpng))[0] + "-q" + str(quality)
+    target = (
+        format.upper()
+        + "_out/"
+        + subset_name
+        + "/"
+        + os.path.splitext(os.path.basename(origpng))[0]
+        + "/"
+        + os.path.splitext(os.path.basename(origpng))[0]
+        + "-q"
+        + str(quality)
+    )
     create_dir(target)
     target_dec = path_for_file_in_tmp(target)
 
-    target += "." + format_recipe['encode_extension']
-    cmd = string.Template(format_recipe['encode_cmd']).substitute(locals())
+    target += "." + format_recipe["encode_extension"]
+    cmd = string.Template(format_recipe["encode_cmd"]).substitute(locals())
     wrapped = wrapper(run_silent, cmd)
     encode_time = Timer(wrapped).timeit(1)
 
     target_json = target_dec + ".json"
-    
-    target_dec += "." + format_recipe['decode_extension']
-    cmd = string.Template(format_recipe['decode_cmd']).substitute(locals())
+
+    target_dec += "." + format_recipe["decode_extension"]
+    cmd = string.Template(format_recipe["decode_cmd"]).substitute(locals())
     wrapped = wrapper(run_silent, cmd)
     decode_time = Timer(wrapped).timeit(1)
-    
-    if format_recipe['decode_extension'] != "png":
+
+    if format_recipe["decode_extension"] != "png":
         target_png = path_for_file_in_tmp(target_dec) + ".png"
         convert_img(target_dec, target_png)
     else:
         target_png = target_dec
 
     # libavif bug?
-    if format_recipe['encode_extension'] == "avif":
+    if format_recipe["encode_extension"] == "avif":
         remove_alpha(target_png, target_png)
-        
+
     target_y4m = path_for_file_in_tmp(target_dec) + ".y4m"
     convertff_img(target_dec, target_y4m)
-        
-    ssim_score, msssim_score, ciede2000_score, psnrhvs_score, vmaf_score = get_score(origy4m, target_y4m, target_json)
-    
+
+    ssim_score, msssim_score, ciede2000_score, psnrhvs_score, vmaf_score = get_score(
+        origy4m, target_y4m, target_json
+    )
+
     butteraugli_score = get_butteraugli(origpng, target_png)
     dssim_score = get_dssim(origpng, target_png)
     ssimulacra_score = get_ssimulacra(origpng, target_png)
@@ -304,41 +312,65 @@ def get_lossy_results(subset_name, origpng, width, height, format,
     except FileNotFoundError:
         pass
 
-    return (target_file_size, encode_time, decode_time, ssim_score,
-            msssim_score, ciede2000_score, psnrhvs_score, vmaf_score,
-            butteraugli_score, dssim_score, ssimulacra_score)
+    return (
+        target_file_size,
+        encode_time,
+        decode_time,
+        ssim_score,
+        msssim_score,
+        ciede2000_score,
+        psnrhvs_score,
+        vmaf_score,
+        butteraugli_score,
+        dssim_score,
+        ssimulacra_score,
+    )
 
 
 def process_image(args):
     [format, format_recipe, subset_name, origpng] = args
 
-    result_file = "results/" + subset_name + "/" + format + "/lossy/" + \
-        os.path.splitext(os.path.basename(origpng))[0] + "." + format + ".out"
+    result_file = (
+        "results/"
+        + subset_name
+        + "/"
+        + format
+        + "/lossy/"
+        + os.path.splitext(os.path.basename(origpng))[0]
+        + "."
+        + format
+        + ".out"
+    )
     if os.path.isfile(result_file) and not os.stat(result_file).st_size == 0:
         return
 
-
     try:
-        isfloat = isinstance(format_recipe['quality_start'], float) or isinstance(format_recipe['quality_end'], float) or isinstance(format_recipe['quality_step'], float)
-        
+        isfloat = (
+            isinstance(format_recipe["quality_start"], float)
+            or isinstance(format_recipe["quality_end"], float)
+            or isinstance(format_recipe["quality_step"], float)
+        )
+
         if isfloat:
-            start = float(format_recipe['quality_start'])
-            end = float(format_recipe['quality_end'])
-            step = float(format_recipe['quality_step'])
+            start = float(format_recipe["quality_start"])
+            end = float(format_recipe["quality_end"])
+            step = float(format_recipe["quality_step"])
         else:
-            start = int(format_recipe['quality_start'])
-            end = int(format_recipe['quality_end'])
-            step = int(format_recipe['quality_step'])
+            start = int(format_recipe["quality_start"])
+            end = int(format_recipe["quality_end"])
+            step = int(format_recipe["quality_step"])
     except ValueError:
-        print('There was an error parsing the format recipe.')
+        print("There was an error parsing the format recipe.")
         return
 
-    if (not 'encode_extension' in format_recipe
-            or not 'decode_extension' in format_recipe
-            or not 'encode_cmd' in format_recipe
-            or not 'lossless_cmd' in format_recipe
-            or not 'decode_cmd' in format_recipe):
-        print('There was an error parsing the format recipe.')
+    if (
+        not "encode_extension" in format_recipe
+        or not "decode_extension" in format_recipe
+        or not "encode_cmd" in format_recipe
+        or not "lossless_cmd" in format_recipe
+        or not "decode_cmd" in format_recipe
+    ):
+        print("There was an error parsing the format recipe.")
         return
 
     orig_file_size = os.path.getsize(origpng)
@@ -347,11 +379,19 @@ def process_image(args):
     pixels = width * height
 
     # Lossless
-    print("Processing image {}, quality lossless".format(
-        os.path.basename(origpng)))
+    print("Processing image {}, quality lossless".format(os.path.basename(origpng)))
 
-    path = "results/" + subset_name + "/" + format + "/lossless/" + os.path.splitext(
-        os.path.basename(origpng))[0] + "." + format + ".out"
+    path = (
+        "results/"
+        + subset_name
+        + "/"
+        + format
+        + "/lossless/"
+        + os.path.splitext(os.path.basename(origpng))[0]
+        + "."
+        + format
+        + ".out"
+    )
     create_dir(path)
     file = open(path, "w")
 
@@ -362,16 +402,34 @@ def process_image(args):
     results = get_lossless_results(subset_name, origpng, format, format_recipe)
     bpp = results[0] * 8 / pixels
     compression_ratio = orig_file_size / results[0]
-    file.write("%s:%d:%d:%d:%f:%f:%f:%f\n" %
-               (os.path.splitext(os.path.basename(origpng))[0], orig_file_size,
-                results[0], pixels, bpp, compression_ratio, results[1],
-                results[2]))
+    file.write(
+        "%s:%d:%d:%d:%f:%f:%f:%f\n"
+        % (
+            os.path.splitext(os.path.basename(origpng))[0],
+            orig_file_size,
+            results[0],
+            pixels,
+            bpp,
+            compression_ratio,
+            results[1],
+            results[2],
+        )
+    )
 
     file.close()
 
     # Lossy
-    path = "results/" + subset_name + "/" + format + "/lossy/" + os.path.splitext(
-        os.path.basename(origpng))[0] + "." + format + ".out"
+    path = (
+        "results/"
+        + subset_name
+        + "/"
+        + format
+        + "/lossy/"
+        + os.path.splitext(os.path.basename(origpng))[0]
+        + "."
+        + format
+        + ".out"
+    )
     create_dir(path)
     file = open(path, "w")
 
@@ -386,17 +444,36 @@ def process_image(args):
     i = 0
     while i < len(quality_list):
         quality = quality_list[i]
-        print("Processing image {}, quality {}".format(
-            os.path.basename(origpng), quality))
-        results = get_lossy_results(subset_name, origpng, width, height,
-                                    format, format_recipe, quality)
+        print(
+            "Processing image {}, quality {}".format(os.path.basename(origpng), quality)
+        )
+        results = get_lossy_results(
+            subset_name, origpng, width, height, format, format_recipe, quality
+        )
         bpp = results[0] * 8 / pixels
         compression_ratio = orig_file_size / results[0]
-        file.write("%s:%f:%d:%d:%d:%f:%f:%f:%f:%f:%f:%f:%f:%f:%f:%f:%f\n" %
-                   (os.path.splitext(os.path.basename(origpng))[0], quality,
-                    orig_file_size, results[0], pixels, bpp, compression_ratio,
-                    results[1], results[2], results[3], results[4], results[5],
-                    results[6], results[7], results[8], results[9], results[10]))
+        file.write(
+            "%s:%f:%d:%d:%d:%f:%f:%f:%f:%f:%f:%f:%f:%f:%f:%f:%f\n"
+            % (
+                os.path.splitext(os.path.basename(origpng))[0],
+                quality,
+                orig_file_size,
+                results[0],
+                pixels,
+                bpp,
+                compression_ratio,
+                results[1],
+                results[2],
+                results[3],
+                results[4],
+                results[5],
+                results[6],
+                results[7],
+                results[8],
+                results[9],
+                results[10],
+            )
+        )
         i += 1
 
     file.close()
@@ -408,12 +485,12 @@ def main(argv):
 
     data = {}
     try:
-        with open('recipes.json') as json_file:
+        with open("recipes.json") as json_file:
             data = json.load(json_file)
     except FileNotFoundError:
         raise Exception("Could not find recipes.json")
 
-    supported_formats = list(data['recipes'].keys())
+    supported_formats = list(data["recipes"].keys())
 
     if len(argv) != 4:
         print(
@@ -427,14 +504,21 @@ def main(argv):
     format = argv[1]
     subset_name = argv[2]
     if format not in supported_formats:
-        print("Image format not supported. Supported formats are: {}.".format(
-            supported_formats))
+        print(
+            "Image format not supported. Supported formats are: {}.".format(
+                supported_formats
+            )
+        )
         return
 
     pool = Pool(processes=16)
-    pool.map(process_image, [(format, data['recipes'][format], subset_name,
-                                origpng)
-                               for origpng in glob.glob(argv[3] + "/*.png")])
+    pool.map(
+        process_image,
+        [
+            (format, data["recipes"][format], subset_name, origpng)
+            for origpng in glob.glob(argv[3] + "/*.png")
+        ],
+    )
 
 
 if __name__ == "__main__":

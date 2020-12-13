@@ -41,16 +41,23 @@ from multiprocessing import Pool
 def get_lossless_average(path, reference_format):
     merged_data = {}
     columns = [
-        "format", "avg_bpp", "avg_compression_ratio", "avg_space_saving",
-        "wavg_encode_time", "wavg_decode_time"
+        "format",
+        "avg_bpp",
+        "avg_compression_ratio",
+        "avg_space_saving",
+        "wavg_encode_time",
+        "wavg_decode_time",
     ]
     final_data = pd.DataFrame(columns=columns)
     final_data.set_index("format", drop=False, inplace=True)
 
     for format in next(os.walk(path))[1]:
         if not glob.glob(path + "/" + format + "/lossless/*.out"):
-            print("Lossless results files could not be found for format {}.".
-                  format(format))
+            print(
+                "Lossless results files could not be found for format {}.".format(
+                    format
+                )
+            )
             continue
 
         rawdata = []
@@ -61,24 +68,32 @@ def get_lossless_average(path, reference_format):
 
         merged_data[format] = pd.concat(rawdata)
         sum_orig_file_size = np.sum(merged_data[format]["orig_file_size"])
-        sum_compressed_file_size = np.sum(
-            merged_data[format]["compressed_file_size"])
+        sum_compressed_file_size = np.sum(merged_data[format]["compressed_file_size"])
         sum_pixels = np.sum(merged_data[format]["pixels"])
         avg_bpp = sum_compressed_file_size * 8 / sum_pixels
         avg_compression_ratio = sum_orig_file_size / sum_compressed_file_size
         avg_space_saving = 1 - (1 / avg_compression_ratio)
         wavg_encode_time = np.average(
-            merged_data[format]["encode_time"],
-            weights=merged_data[format]["pixels"])
+            merged_data[format]["encode_time"], weights=merged_data[format]["pixels"]
+        )
         wavg_decode_time = np.average(
-            merged_data[format]["decode_time"],
-            weights=merged_data[format]["pixels"])
+            merged_data[format]["decode_time"], weights=merged_data[format]["pixels"]
+        )
         final_data.loc[format] = [
-            format, avg_bpp, avg_compression_ratio, avg_space_saving,
-            wavg_encode_time, wavg_decode_time
+            format,
+            avg_bpp,
+            avg_compression_ratio,
+            avg_space_saving,
+            wavg_encode_time,
+            wavg_decode_time,
         ]
 
-    final_data = final_data.assign(weissman_score=lambda x: x.avg_compression_ratio / x.loc[reference_format, "avg_compression_ratio"] * np.log(x.loc[reference_format, "wavg_encode_time"] * 1000) / np.log(x.wavg_encode_time * 1000))
+    final_data = final_data.assign(
+        weissman_score=lambda x: x.avg_compression_ratio
+        / x.loc[reference_format, "avg_compression_ratio"]
+        * np.log(x.loc[reference_format, "wavg_encode_time"] * 1000)
+        / np.log(x.wavg_encode_time * 1000)
+    )
     final_data.sort_values("weissman_score", ascending=False, inplace=True)
     results_file = path + "/" + os.path.basename(path) + ".lossless.out"
 
@@ -92,32 +107,52 @@ def get_lossless_average(path, reference_format):
     file.write(markdown_writer.stream.getvalue())
     file.close()
 
-    print(
-        "Lossless results file successfully saved to {}.".format(results_file))
+    print("Lossless results file successfully saved to {}.".format(results_file))
 
 
 def get_lossy_average(args):
     [path, format, reference_format] = args
 
     if not glob.glob(path + "/" + format + "/lossy/*.out"):
-        print("Lossy results files could not be found for format {}.".format(
-            format))
+        print("Lossy results files could not be found for format {}.".format(format))
         return
 
     rawdata = []
     merged_data = []
     columns = [
-        "file_name", "quality", "orig_file_size", "compressed_file_size",
-        "pixels", "bpp", "compression_ratio", "encode_time", "decode_time",
-        "ssim_score", "msssim_score", "ciede2000_score", "psnrhvs_score",
-        "vmaf_score", "butteraugli_score", "dssim_score", "ssimulacra_score"
+        "file_name",
+        "quality",
+        "orig_file_size",
+        "compressed_file_size",
+        "pixels",
+        "bpp",
+        "compression_ratio",
+        "encode_time",
+        "decode_time",
+        "ssim_score",
+        "msssim_score",
+        "ciede2000_score",
+        "psnrhvs_score",
+        "vmaf_score",
+        "butteraugli_score",
+        "dssim_score",
+        "ssimulacra_score",
     ]
     final_columns = [
-        "quality", "avg_bpp", "avg_compression_ratio", "avg_space_saving",
-        "wavg_encode_time", "wavg_decode_time", "wavg_ssim_score",
-         "wavg_msssim_score", "wavg_ciede2000_score","wavg_psnrhvs_score",
-        "wavg_vmaf_score", "wavg_butteraugli_score", "wavg_dssim_score", 
-        "wavg_ssimulacra_score"
+        "quality",
+        "avg_bpp",
+        "avg_compression_ratio",
+        "avg_space_saving",
+        "wavg_encode_time",
+        "wavg_decode_time",
+        "wavg_ssim_score",
+        "wavg_msssim_score",
+        "wavg_ciede2000_score",
+        "wavg_psnrhvs_score",
+        "wavg_vmaf_score",
+        "wavg_butteraugli_score",
+        "wavg_dssim_score",
+        "wavg_ssimulacra_score",
     ]
     final_data = pd.DataFrame(columns=final_columns)
 
@@ -138,45 +173,65 @@ def get_lossy_average(args):
 
         quality = np.mean(merged_data[i]["quality"])
         sum_orig_file_size = np.sum(merged_data[i]["orig_file_size"])
-        sum_compressed_file_size = np.sum(
-            merged_data[i]["compressed_file_size"])
+        sum_compressed_file_size = np.sum(merged_data[i]["compressed_file_size"])
         sum_pixels = np.sum(merged_data[i]["pixels"])
         avg_bpp = sum_compressed_file_size * 8 / sum_pixels
         avg_compression_ratio = sum_orig_file_size / sum_compressed_file_size
         avg_space_saving = 1 - (1 / avg_compression_ratio)
         wavg_encode_time = np.average(
-            merged_data[i]["encode_time"], weights=merged_data[i]["pixels"])
+            merged_data[i]["encode_time"], weights=merged_data[i]["pixels"]
+        )
         wavg_decode_time = np.average(
-            merged_data[i]["decode_time"], weights=merged_data[i]["pixels"])
+            merged_data[i]["decode_time"], weights=merged_data[i]["pixels"]
+        )
         wavg_ssim_score = np.average(
-            merged_data[i]["ssim_score"], weights=merged_data[i]["pixels"])
+            merged_data[i]["ssim_score"], weights=merged_data[i]["pixels"]
+        )
         wavg_ciede2000_score = np.average(
-            merged_data[i]["ciede2000_score"], weights=merged_data[i]["pixels"])
+            merged_data[i]["ciede2000_score"], weights=merged_data[i]["pixels"]
+        )
         wavg_msssim_score = np.average(
-            merged_data[i]["msssim_score"], weights=merged_data[i]["pixels"])
+            merged_data[i]["msssim_score"], weights=merged_data[i]["pixels"]
+        )
         wavg_psnrhvs_score = np.average(
-            merged_data[i]["psnrhvs_score"], weights=merged_data[i]["pixels"])
+            merged_data[i]["psnrhvs_score"], weights=merged_data[i]["pixels"]
+        )
         wavg_vmaf_score = np.average(
-            merged_data[i]["vmaf_score"], weights=merged_data[i]["pixels"])
+            merged_data[i]["vmaf_score"], weights=merged_data[i]["pixels"]
+        )
         wavg_butteraugli_score = np.average(
-            merged_data[i]["butteraugli_score"], weights=merged_data[i]["pixels"])
+            merged_data[i]["butteraugli_score"], weights=merged_data[i]["pixels"]
+        )
         wavg_dssim_score = np.average(
-            merged_data[i]["dssim_score"], weights=merged_data[i]["pixels"])
+            merged_data[i]["dssim_score"], weights=merged_data[i]["pixels"]
+        )
         wavg_ssimulacra_score = np.average(
-            merged_data[i]["ssimulacra_score"], weights=merged_data[i]["pixels"])
+            merged_data[i]["ssimulacra_score"], weights=merged_data[i]["pixels"]
+        )
 
         final_data.loc[i] = [
-            quality, avg_bpp, avg_compression_ratio, avg_space_saving,
-            wavg_encode_time, wavg_decode_time, wavg_ssim_score,
-             wavg_msssim_score, wavg_ciede2000_score, wavg_psnrhvs_score,
-            wavg_vmaf_score, wavg_butteraugli_score, wavg_dssim_score,
-            wavg_ssimulacra_score
+            quality,
+            avg_bpp,
+            avg_compression_ratio,
+            avg_space_saving,
+            wavg_encode_time,
+            wavg_decode_time,
+            wavg_ssim_score,
+            wavg_msssim_score,
+            wavg_ciede2000_score,
+            wavg_psnrhvs_score,
+            wavg_vmaf_score,
+            wavg_butteraugli_score,
+            wavg_dssim_score,
+            wavg_ssimulacra_score,
         ]
-    results_file = path + "/" + os.path.basename(
-        path) + "." + format + ".lossy.out"
+    results_file = path + "/" + os.path.basename(path) + "." + format + ".lossy.out"
     final_data.to_csv(results_file, sep=":", index=False)
-    print("Lossy results file for format {} successfully saved to {}.".format(
-        format, results_file))
+    print(
+        "Lossy results file for format {} successfully saved to {}.".format(
+            format, results_file
+        )
+    )
 
 
 def main(argv):
@@ -187,9 +242,8 @@ def main(argv):
         print(
             "rd_average.py: Calculate a per format weighted averages of the results files generated by rd_collect.py"
         )
-        print(
-            "Arg 1: Path to the results of a subset generated by rd_collect.py")
-        print("       For ex: rd_average.py \"results/subset1\"")
+        print("Arg 1: Path to the results of a subset generated by rd_collect.py")
+        print('       For ex: rd_average.py "results/subset1"')
         print("Arg 2: Reference format with which to compare other formats.")
         print("       Default to mozjpeg")
         return
@@ -198,8 +252,11 @@ def main(argv):
     available_formats = next(os.walk(results_folder))[1]
 
     # Check is there is actually results files in the path provided
-    if (not os.path.isdir(results_folder) or not available_formats
-            or not glob.glob(results_folder + "/**/*.out", recursive=True)):
+    if (
+        not os.path.isdir(results_folder)
+        or not available_formats
+        or not glob.glob(results_folder + "/**/*.out", recursive=True)
+    ):
         print(
             "Could not find all results file. Please make sure the path provided is correct."
         )
@@ -210,20 +267,27 @@ def main(argv):
     except IndexError:
         reference_format = "mozjpeg"
 
-    if (reference_format not in available_formats or not glob.glob(
-            results_folder + "/" + reference_format + "/lossless/*.out")
-            or not glob.glob(results_folder + "/" + reference_format +
-                             "/lossy/*.out")):
+    if (
+        reference_format not in available_formats
+        or not glob.glob(results_folder + "/" + reference_format + "/lossless/*.out")
+        or not glob.glob(results_folder + "/" + reference_format + "/lossy/*.out")
+    ):
         print(
-            "Could not find reference format results files. Please choose a format among {} or check if the reference format results files are present.".
-            format(available_formats))
+            "Could not find reference format results files. Please choose a format among {} or check if the reference format results files are present.".format(
+                available_formats
+            )
+        )
         return
 
     get_lossless_average(results_folder, reference_format)
 
-    Pool().map(get_lossy_average,
-               [(results_folder, format, reference_format)
-                for format in next(os.walk(results_folder))[1]])
+    Pool().map(
+        get_lossy_average,
+        [
+            (results_folder, format, reference_format)
+            for format in next(os.walk(results_folder))[1]
+        ],
+    )
 
 
 if __name__ == "__main__":
