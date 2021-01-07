@@ -45,7 +45,7 @@ from timeit import Timer
 import numpy as np
 
 # Tests
-vmaf = "vmaf --json --model version=vmaf_v0.6.1 --feature psnr --feature psnr_hvs --feature float_ssim --feature float_ms_ssim --feature ciede --json"
+vmaf = "vmaf --json --model version=vmaf_v0.6.1 --feature psnr --feature psnr_hvs --feature float_ssim --feature float_ms_ssim --feature ciede"
 
 # Path to tmp dir to be used by the tests
 tmpdir = "/tmp/"
@@ -124,6 +124,22 @@ def convert_img(inn, out):
     run_silent(cmd)
 
 
+def detect_alpha(img):
+    cmd = "identify -format '%%[channels]' %s" % (img)
+    proc = subprocess.Popen(
+        split(cmd), stdout=subprocess.PIPE, stderr=subprocess.PIPE, encoding="utf-8"
+    )
+    out, err = proc.communicate()
+    if proc.returncode != 0:
+        sys.stderr.write("Failed process: %s\n" % (cmd))
+        sys.exit(proc.returncode)
+
+    channels = out.split(os.linesep)[0]
+    if channels == "srgba":
+        return True;
+    return False
+
+
 def remove_alpha(inn, out):
     # PNG24: needed otherwise grayscale image lose their sRGB colorspace
     cmd = "convert %s -alpha off PNG24:%s" % (inn, out)
@@ -140,13 +156,13 @@ def convertff_img(inn, out):
 
 
 def get_score(y4m1, y4m2, target_json):
-    cmd = "%s  -r %s -d %s -o %s" % (vmaf, y4m1, y4m2, target_json)
+    cmd = "%s -r %s -d %s -o %s" % (vmaf, y4m1, y4m2, target_json)
     proc = subprocess.Popen(
         split(cmd), stdout=subprocess.PIPE, stderr=subprocess.PIPE, encoding="utf-8"
     )
     out, err = proc.communicate()
     if proc.returncode != 0:
-        sys.stderr.write("Failed process: %s\n" % (vmaf))
+        sys.stderr.write("Failed process: %s\n" % (cmd))
         sys.exit(proc.returncode)
 
     with open(target_json) as f:
@@ -288,7 +304,7 @@ def get_lossy_results(
         target_png = target_dec
 
     # libavif bug?
-    if format_recipe["encode_extension"] == "avif":
+    if not detect_alpha(origpng):
         remove_alpha(target_png, target_png)
 
     target_y4m = path_for_file_in_tmp(target_dec) + ".y4m"
