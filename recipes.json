@@ -83,8 +83,8 @@
             "quality_step": 1,
             "encode_extension": "wp2",
             "decode_extension": "png",
-            "encode_cmd": "cwp2 -mt 2 -q $quality -o $target $origpng",
-            "lossless_cmd": "cwp2 -mt 2 -q 100 -o $target $origpng",
+            "encode_cmd": "cwp2 -q $quality -o $target $origpng",
+            "lossless_cmd": "cwp2 -q 100 -o $target $origpng",
             "decode_cmd": "dwp2 -o $target_dec $target",
             "export_to_png": true
         }
