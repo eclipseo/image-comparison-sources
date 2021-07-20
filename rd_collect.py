@@ -168,23 +168,17 @@ def get_score(y4m1, y4m2, target_json):
     with open(target_json) as f:
         data = f.read()
         scores = json.loads(data)
-        for i in scores["pooled_metrics"]:
-            if i["metric"] == "psnr_hvs":
-                psnrhvs_score = i["pooling_methods"]["mean"]
-            elif i["metric"] == "float_ssim":
-                ssim_score = i["pooling_methods"]["mean"]
-            elif i["metric"] == "float_ms_ssim":
-                msssim_score = i["pooling_methods"]["mean"]
-            elif i["metric"] == "ciede2000":
-                ciede2000_score = i["pooling_methods"]["mean"]
-            elif i["metric"] == "vmaf":
-                vmaf_score = i["pooling_methods"]["mean"]
+        psnrhvs_score = scores["pooled_metrics"]["psnr_hvs"]["mean"]
+        ssim_score = scores["pooled_metrics"]["float_ssim"]["mean"]
+        msssim_score = scores["pooled_metrics"]["float_ms_ssim"]["mean"]
+        ciede2000_score = scores["pooled_metrics"]["ciede2000"]["mean"]
+        vmaf_score = scores["pooled_metrics"]["vmaf"]["mean"]
 
     return ssim_score, msssim_score, ciede2000_score, psnrhvs_score, vmaf_score
 
 
 def get_butteraugli(png1, png2):
-    cmd = "butteraugli %s %s" % (png1, png2)
+    cmd = "butteraugli_main %s %s" % (png1, png2)
     proc = subprocess.Popen(
         split(cmd), stdout=subprocess.PIPE, stderr=subprocess.PIPE, encoding="utf-8"
     )
@@ -212,7 +206,7 @@ def get_dssim(png1, png2):
 
 
 def get_ssimulacra(png1, png2):
-    cmd = "ssimulacra %s %s" % (png1, png2)
+    cmd = "ssimulacra_main %s %s" % (png1, png2)
     proc = subprocess.Popen(
         split(cmd), stdout=subprocess.PIPE, stderr=subprocess.PIPE, encoding="utf-8"
     )

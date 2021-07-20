@@ -163,17 +163,17 @@ def process_image(args):
     lossless_target = os.path.join(path, lossless_target[0])
 
     # BPG @ crf24
-    ref_file = "BPG_out" + '/' + subset_name + "/" + os.path.splitext(
+    ref_file = "MOZJPEG_out" + '/' + subset_name + "/" + os.path.splitext(
         os.path.basename(origpng))[0] + "/" + os.path.splitext(
-            os.path.basename(origpng))[0] + "-q24.bpg"
+            os.path.basename(origpng))[0] + "-q85.jpg"
     if not os.path.isfile(ref_file):
         print(
-            "BPG reference file {} was not found. You must run rd_collect with BPG first.".
+            "MOZJPEG reference file {} was not found. You must run rd_collect with MOZJPEG first.".
             format(ref_file))
         return
 
     large_size = os.path.getsize(ref_file)
-    big_size = large_size / 0.80
+    big_size = large_size * 1.25
     medium_size = large_size * 0.60
     small_size = medium_size * 0.60
     tiny_size = small_size * 0.60

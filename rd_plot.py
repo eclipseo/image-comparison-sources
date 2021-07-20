@@ -56,7 +56,7 @@ def generate_plots(path, requested_formats):
     plt.ylabel("Float SSIM")
     plt.xscale("log")
     plt.xlim([0.1, 5])
-    plt.ylim([0.98, 1])
+    plt.ylim([0.96, 1])
     plt.minorticks_on()
     plt.grid(b=True, which="both", color="0.65", linestyle="--")
     for format in data:
@@ -103,7 +103,7 @@ def generate_plots(path, requested_formats):
     plt.ylabel("Float MS-SSIM")
     plt.xscale("log")
     plt.xlim([0.1, 5])
-    plt.ylim([0.98, 1])
+    plt.ylim([0.85, 1.01])
     plt.minorticks_on()
     plt.grid(b=True, which="both", color="0.65", linestyle="--")
     for format in data:
@@ -168,7 +168,7 @@ def generate_plots(path, requested_formats):
     plt.xscale("log")
     plt.yscale("log")
     plt.xlim([0.1, 5])
-    plt.ylim([1, 20])
+    plt.ylim([2, 25])
     plt.minorticks_on()
     plt.grid(b=True, which="both", color="0.65", linestyle="--")
     for format in data:
@@ -197,7 +197,7 @@ def generate_plots(path, requested_formats):
     plt.xscale("log")
     plt.yscale("log")
     plt.xlim([0.1, 5])
-    plt.ylim([0.0005, 0.20])
+    plt.ylim([0.0001, 0.1])
     plt.minorticks_on()
     plt.grid(b=True, which="both", color="0.65", linestyle="--")
     for format in data:
@@ -219,7 +219,7 @@ def generate_plots(path, requested_formats):
     plt.xscale("log")
     plt.yscale("log")
     plt.xlim([0.1, 5])
-    plt.ylim([0.005, 0.2])
+    plt.ylim([0.02, 0.25])
     plt.minorticks_on()
     plt.grid(b=True, which="both", color="0.65", linestyle="--")
     for format in data:
@@ -278,6 +278,7 @@ def main(argv):
         print('       For ex: rd_average.py "results/subset1" "bpg,mozjpeg,flif,vp9"')
 
     results_folder = os.path.normpath(argv[1])
+    subset = os.path.basename(results_folder)
 
     if not os.path.isdir(results_folder) or not glob.glob(
         results_folder + "/*.lossy.out"
@@ -289,7 +290,8 @@ def main(argv):
 
     available_formats = []
     for f in glob.glob(results_folder + "/*.lossy.out"):
-        available_formats.append(os.path.basename(f).split(".")[1])
+        baseformat = os.path.basename(f).replace(".lossy.out", "").replace(f"{subset}.", "")
+        available_formats.append(baseformat)
 
     try:
         requested_formats = [format.strip() for format in argv[2].split(",")]

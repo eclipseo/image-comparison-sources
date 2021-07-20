@@ -1,28 +1,39 @@
 {
     "recipes": {
-        "aom": {
+        "aom_3.1.1": {
             "quality_start": 4,
             "quality_end": 63,
             "quality_step": 1,
             "encode_extension": "avif",
             "decode_extension": "png",
-            "encode_cmd": "avifenc --tilecolslog2 1 -c aom -s d --min $quality --max $quality -o $target $origpng",
-            "lossless_cmd": "avifenc --lossless --tilecolslog2 1 -c aom -s d -o $target $origpng",
+            "encode_cmd": "avifenc -a end-usage=q -a tune=butteraugli -a sharpness=3 --min 0 --max 63 -a cq-level=$quality -o $target $origpng",
+            "lossless_cmd": "avifenc --lossless -c aom -s d -o $target $origpng",
             "decode_cmd": "avifdec -c dav1d $target $target_dec",
             "export_to_png": true
-        }, 
-        "bpg": {
-            "quality_start": 1,
-            "quality_end": 51,
+        },
+        "aom_20210715": {
+            "quality_start": 4,
+            "quality_end": 63,
             "quality_step": 1,
-            "encode_extension": "bpg",
+            "encode_extension": "avif",
             "decode_extension": "png",
-            "encode_cmd": "bpgenc -m 8 -f 420 -q $quality -o $target $origpng",
-            "lossless_cmd": "bpgenc -m 8 -f 420 -lossless -o $target $origpng",
-            "decode_cmd": "bpgdec -o $target_dec $target",
+            "encode_cmd": "avifenc -a end-usage=q -a tune=butteraugli -a sharpness=3 --min 0 --max 63 -a cq-level=$quality -o $target $origpng",
+            "lossless_cmd": "avifenc --lossless -c aom -s d -o $target $origpng",
+            "decode_cmd": "avifdec -c dav1d $target $target_dec",
             "export_to_png": true
         },
-        "jxl": {
+        "heif_1.12.0": {
+            "quality_start": 1,
+            "quality_end": 100,
+            "quality_step": 1,
+            "encode_extension": "heif",
+            "decode_extension": "png",
+            "encode_cmd": "heif-enc -p chroma=444 --matrix_coefficients=0 --quality $quality -o $target $origpng",
+            "lossless_cmd": "heif-enc -L -p chroma=444 --matrix_coefficients=0 -o $target $origpng",
+            "decode_cmd": "heif-convert $target $target_dec",
+            "export_to_png": true
+        },
+        "jxl_0.3.7": {
             "quality_start": 8,
             "quality_end": 100,
             "quality_step": 2,
@@ -30,6 +41,28 @@
             "decode_extension": "png",
             "encode_cmd": "cjxl $origpng $target -v -q $quality",
             "lossless_cmd": "cjxl $origpng $target -v -q 100",
+            "decode_cmd": "djxl $target $target_dec",
+            "export_to_png": true
+        },
+        "jxl_20210715": {
+            "quality_start": 8,
+            "quality_end": 100,
+            "quality_step": 2,
+            "encode_extension": "jxl",
+            "decode_extension": "png",
+            "encode_cmd": "cjxl $origpng $target -v -q $quality",
+            "lossless_cmd": "cjxl $origpng $target -v -q 100",
+            "decode_cmd": "djxl $target $target_dec",
+            "export_to_png": true
+        },
+        "jxl_s9E3I1_20210715": {
+            "quality_start": 8,
+            "quality_end": 100,
+            "quality_step": 2,
+            "encode_extension": "jxl",
+            "decode_extension": "png",
+            "encode_cmd": "cjxl -s 9 -E 3 -I 1 $origpng $target -v -q $quality",
+            "lossless_cmd": "cjxl -s 9 -E 3 -I 1 $origpng $target -v -q 100",
             "decode_cmd": "djxl $target $target_dec",
             "export_to_png": true
         },
@@ -44,29 +77,7 @@
             "decode_cmd": "djpeg -outfile $target_dec $target",
             "export_to_png": true
         },
-        "rav1e": {
-            "quality_start": 1,
-            "quality_end": 201,
-            "quality_step": 5,
-            "encode_extension": "avif",
-            "decode_extension": "png",
-            "encode_cmd": "avifenc --tilecolslog2 1 -c rav1e -s d --min $quality --max $quality -o $target $origpng",
-            "lossless_cmd": "avifenc --lossless --tilecolslog2 1 -c rav1e -s d -o $target $origpng",
-            "decode_cmd": "avifdec -c dav1d $target $target_dec",
-            "export_to_png": true
-        },
-        "svt-av1": {
-            "quality_start": 4,
-            "quality_end": 63,
-            "quality_step": 1,
-            "encode_extension": "avif",
-            "decode_extension": "png",
-            "encode_cmd": "avifenc --tilecolslog2 1 -c svt -s d -y 420 --min $quality --max $quality -o $target $origpng",
-            "lossless_cmd": "avifenc --lossless --tilecolslog2 1 -c svt -s d -y 420 -o $target $origpng",
-            "decode_cmd": "avifdec -c dav1d $target $target_dec",
-            "export_to_png": true
-        },
-        "webp": {
+        "webp_1.2.0": {
             "quality_start": 0,
             "quality_end": 95,
             "quality_step": 1,
@@ -77,14 +88,25 @@
             "decode_cmd": "dwebp -o $target_dec $target",
             "export_to_png": true
         },
-        "webp2": {
+        "webp2_20201204": {
             "quality_start": 0,
             "quality_end": 95,
             "quality_step": 1,
             "encode_extension": "wp2",
             "decode_extension": "png",
-            "encode_cmd": "cwp2 -q $quality -o $target $origpng",
-            "lossless_cmd": "cwp2 -q 100 -o $target $origpng",
+            "encode_cmd": "cwp2 -mt 2 -uv_mode 2 -q $quality -o $target $origpng",
+            "lossless_cmd": "cwp2 -mt 2 -uv_mode 2 -q 100 -o $target $origpng",
+            "decode_cmd": "dwp2 -o $target_dec $target",
+            "export_to_png": true
+        },
+        "webp2_20210715": {
+            "quality_start": 0,
+            "quality_end": 95,
+            "quality_step": 1,
+            "encode_extension": "wp2",
+            "decode_extension": "png",
+            "encode_cmd": "cwp2 -mt 2 -uv_mode 2 -q $quality -o $target $origpng",
+            "lossless_cmd": "cwp2 -mt 2 -uv_mode 2 -q 100 -o $target $origpng",
             "decode_cmd": "dwp2 -o $target_dec $target",
             "export_to_png": true
         }
