@@ -28,7 +28,7 @@
             "quality_step": 1,
             "encode_extension": "heif",
             "decode_extension": "png",
-            "encode_cmd": "heif-enc -p chroma=444 --matrix_coefficients=0 --quality $quality -o $target $origpng",
+            "encode_cmd": "heif-enc -p chroma=444 --quality $quality -o $target $origpng",
             "lossless_cmd": "heif-enc -L -p chroma=444 --matrix_coefficients=0 -o $target $origpng",
             "decode_cmd": "heif-convert $target $target_dec",
             "export_to_png": true
@@ -55,14 +55,36 @@
             "decode_cmd": "djxl $target $target_dec",
             "export_to_png": true
         },
-        "jxl_s9E3I1_20210715": {
+        "jxl_e3_20210715": {
             "quality_start": 8,
             "quality_end": 100,
             "quality_step": 2,
             "encode_extension": "jxl",
             "decode_extension": "png",
-            "encode_cmd": "cjxl -s 9 -E 3 -I 1 $origpng $target -v -q $quality",
-            "lossless_cmd": "cjxl -s 9 -E 3 -I 1 $origpng $target -v -q 100",
+            "encode_cmd": "cjxl -e 3 $origpng $target -v -q $quality",
+            "lossless_cmd": "cjxl -e 3 $origpng $target -v -q 100",
+            "decode_cmd": "djxl $target $target_dec",
+            "export_to_png": true
+        },
+        "jxl_e5_20210715": {
+            "quality_start": 8,
+            "quality_end": 100,
+            "quality_step": 2,
+            "encode_extension": "jxl",
+            "decode_extension": "png",
+            "encode_cmd": "cjxl -e 5 $origpng $target -v -q $quality",
+            "lossless_cmd": "cjxl -e 5 $origpng $target -v -q 100",
+            "decode_cmd": "djxl $target $target_dec",
+            "export_to_png": true
+        },
+        "jxl_e9E3I1_20210715": {
+            "quality_start": 8,
+            "quality_end": 100,
+            "quality_step": 2,
+            "encode_extension": "jxl",
+            "decode_extension": "png",
+            "encode_cmd": "cjxl -e 9 -E 3 -I 1 $origpng $target -v -q $quality",
+            "lossless_cmd": "cjxl -e 9 -E 3 -I 1 $origpng $target -v -q 100",
             "decode_cmd": "djxl $target $target_dec",
             "export_to_png": true
         },
@@ -75,6 +97,39 @@
             "encode_cmd": "cjpeg -quality $quality -outfile $target $origpng",
             "lossless_cmd": "cjpeg -rgb -quality 100 -outfile $target $origpng",
             "decode_cmd": "djpeg -outfile $target_dec $target",
+            "export_to_png": true
+        },
+        "png": {
+            "quality_start": 5,
+            "quality_end": 95,
+            "quality_step": 1,
+            "encode_extension": "png",
+            "decode_extension": "ppm",
+            "encode_cmd": "convert $origppm PNG24:$target",
+            "lossless_cmd": "convert $origppm PNG24:$target",
+            "decode_cmd": "convert $target PNG24:$target_dec",
+            "export_to_png": true
+        },
+        "webp_z5_1.2.0": {
+            "quality_start": 0,
+            "quality_end": 95,
+            "quality_step": 1,
+            "encode_extension": "webp",
+            "decode_extension": "png",
+            "encode_cmd": "cwebp -mt -q $quality -o $target $origpng",
+            "lossless_cmd": "cwebp -mt -z 5 -lossless -o $target $origpng",
+            "decode_cmd": "dwebp -o $target_dec $target",
+            "export_to_png": true
+        },
+        "webp_z7_1.2.0": {
+            "quality_start": 0,
+            "quality_end": 95,
+            "quality_step": 1,
+            "encode_extension": "webp",
+            "decode_extension": "png",
+            "encode_cmd": "cwebp -mt -q $quality -o $target $origpng",
+            "lossless_cmd": "cwebp -mt -z 7 -lossless -o $target $origpng",
+            "decode_cmd": "dwebp -o $target_dec $target",
             "export_to_png": true
         },
         "webp_1.2.0": {

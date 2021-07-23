@@ -222,6 +222,8 @@ def get_ssimulacra(png1, png2):
 #   (target_file_size, encode_time, decode_time)
 def get_lossless_results(subset_name, origpng, format, format_recipe):
 
+    origppm = os.path.splitext(origpng)[0] + ".ppm";
+
     target = (
         format.upper()
         + "_out/"
@@ -238,12 +240,12 @@ def get_lossless_results(subset_name, origpng, format, format_recipe):
     target += "." + format_recipe["encode_extension"]
     cmd = string.Template(format_recipe["lossless_cmd"]).substitute(locals())
     wrapped = wrapper(run_silent, cmd)
-    encode_time = Timer(wrapped).timeit(5)
+    encode_time = Timer(wrapped).timeit(5) / 5
 
     target_dec += "." + format_recipe["decode_extension"]
     cmd = string.Template(format_recipe["decode_cmd"]).substitute(locals())
     wrapped = wrapper(run_silent, cmd)
-    decode_time = Timer(wrapped).timeit(5)
+    decode_time = Timer(wrapped).timeit(5) / 5
 
     target_file_size = os.path.getsize(target)
 
@@ -391,6 +393,9 @@ def process_image(args):
     # Lossless
     print("Processing image {}, quality lossless".format(os.path.basename(origpng)))
 
+    origppm = os.path.splitext(origpng)[0] + ".ppm";
+    ppm_file_size = os.path.getsize(origppm)
+
     path = (
         "results/"
         + subset_name
@@ -411,12 +416,12 @@ def process_image(args):
 
     results = get_lossless_results(subset_name, origpng, format, format_recipe)
     bpp = results[0] * 8 / pixels
-    compression_ratio = orig_file_size / results[0]
+    compression_ratio = ppm_file_size / results[0]
     file.write(
         "%s:%d:%d:%d:%f:%f:%f:%f\n"
         % (
             os.path.splitext(os.path.basename(origpng))[0],
-            orig_file_size,
+            ppm_file_size,
             results[0],
             pixels,
             bpp,
@@ -427,6 +432,9 @@ def process_image(args):
     )
 
     file.close()
+
+    if "png" in format:
+        return
 
     # Lossy
     path = (
